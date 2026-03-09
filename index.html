@@ -1,0 +1,353 @@
+import React, { useState, useEffect } from 'react';
+import { Play, CheckCircle, XCircle, Award, ArrowRight, RotateCcw, Lightbulb, Triangle, Diamond, Circle, Square } from 'lucide-react';
+
+const quizData = [
+  {
+    question: "Combien de provinces historiques composent le Pays Basque Nord ?",
+    options: ["4", "5", "3", "7"],
+    answer: "3",
+    explanation: "Le Pays Basque Nord (Iparralde) est composé du Labourd, de la Basse-Navarre et de la Soule. Si l'on ajoute les 4 provinces du Sud (Hegoalde) situées en Espagne, on arrive au chiffre symbolique de 7 provinces ('Zazpiak Bat')."
+  },
+  {
+    question: "Quelle est la caractéristique principale de 96 % des entreprises installées au Pays Basque ?",
+    options: ["Elles ont plus de 100 salariés", "Elles sont dans le tourisme", "Elles emploient moins de 10 salariés", "Elles font du surf"],
+    answer: "Elles emploient moins de 10 salariés",
+    explanation: "Le tissu économique local est essentiellement composé de TPE (Très Petites Entreprises). À l'inverse des idées reçues, ces petites structures représentent un emploi sur deux sur le territoire."
+  },
+  {
+    question: "Le secteur du tourisme emploie plus de personnes que le secteur de l'industrie au Pays Basque ?",
+    options: ["Vrai", "Faux"],
+    answer: "Faux",
+    explanation: "Malgré la forte notoriété touristique de la région, l'industrie emploie davantage de personnes que le tourisme. L'économie basque possède une forte culture de production et de fabrication."
+  },
+  {
+    question: "Quelle entreprise est le plus gros employeur privé du Pays Basque (environ 900 salariés) ?",
+    options: ["L'Hôpital de Bayonne", "Carrefour", "Quiksilver", "Dassault Aviation"],
+    answer: "Dassault Aviation",
+    explanation: "Située à Anglet, Dassault Aviation est le fer de lance du secteur Aéronautique, mécanique et métallurgie, l'un des 10 secteurs clés identifiés pour le territoire."
+  },
+  {
+    question: "Comment s'appelle la monnaie locale du Pays Basque, aujourd'hui la plus importante d'Europe ?",
+    options: ["L'Euro Basque", "L'Eusko", "Le Makila", "Le Pas-Basque"],
+    answer: "L'Eusko",
+    explanation: "L'utilisation d'une monnaie locale comme l'Eusko illustre la volonté des habitants d'être acteurs de leur économie par leurs achats et de soutenir les circuits courts."
+  },
+  {
+    question: "Les fermes au Pays Basque sont en moyenne deux fois plus petites que les fermes françaises ?",
+    options: ["Faux", "Vrai"],
+    answer: "Vrai",
+    explanation: "L'agriculture basque est marquée par des exploitations de petite taille, souvent familiales. L'attachement à la terre a permis de maintenir une activité agro-pastorale dynamique."
+  },
+  {
+    question: "Quel pourcentage de la population du Pays Basque Nord est aujourd'hui bascophone ?",
+    options: ["5 %", "50 %", "80 %", "20 %"],
+    answer: "20 %",
+    explanation: "Si 20 % de la population parle le basque (Euskara), la dynamique est forte chez les jeunes : 1 élève sur 4 est aujourd'hui scolarisé dans un système immersif ou bilingue."
+  },
+  {
+    question: "Quel port basque est le premier port de France pour la pêche au thon et au merlu ?",
+    options: ["Saint-Jean-de-Luz / Ciboure", "Bayonne", "Hendaye", "Biarritz"],
+    answer: "Saint-Jean-de-Luz / Ciboure",
+    explanation: "L'activité de pêche est historique. Si elle se concentre aujourd'hui sur le thon et le merlu, les marins basques partaient autrefois jusqu'à Terre-Neuve pour chasser la baleine."
+  },
+  {
+    question: "Quel est le plus gros employeur public du territoire ?",
+    options: ["L'Hôpital de la Côte Basque", "L'Agglomération (CAPB)", "L’Éducation Nationale", "La Ville de Bayonne"],
+    answer: "L'Hôpital de la Côte Basque",
+    explanation: "Avec environ 3 500 salariés, l'Hôpital de Bayonne est le premier employeur public, devant l'Éducation Nationale et la Communauté d'Agglomération."
+  },
+  {
+    question: "Quelle est la particularité du transport de marchandises au passage transfrontalier chaque jour ?",
+    options: ["Arrêt obligatoire au fret", "10 000 camions circulent par jour", "Uniquement par train", "Plus de douane donc plus de transit"],
+    answer: "10 000 camions circulent par jour",
+    explanation: "Le Pays Basque est un axe de transit européen majeur entre la péninsule ibérique et le reste de l'Europe, ce qui explique ce flux intense de marchandises."
+  },
+  {
+    question: "Quand la Communauté d'Agglomération Pays Basque (CAPB) a-t-elle été officiellement créée ?",
+    options: ["Janvier 2006", "Janvier 2000", "Janvier 2017", "Janvier 2020"],
+    answer: "Janvier 2017",
+    explanation: "La CAPB est née le 1er janvier 2017 de la fusion de 10 anciennes intercommunalités. C'est un événement historique pour l'institution du Pays Basque Nord."
+  },
+  {
+    question: "Combien de communes regroupe la Communauté d'Agglomération Pays Basque ?",
+    options: ["21", "10", "158", "50"],
+    answer: "158",
+    explanation: "Avec ses 158 communes, la CAPB est l'une des plus vastes d'agglomérations de France. Elle s'étend du littoral très dense jusqu'aux petits villages isolés de la Soule."
+  },
+  {
+    question: "Quel est l'un des trois axes principaux du projet de territoire de la CAPB ?",
+    options: ["Préserver nos ressources", "Tourisme de masse", "Tout pour la voiture", "Concentrer les emplois sur la côte"],
+    answer: "Préserver nos ressources",
+    explanation: "Face aux défis climatiques et à la pression foncière, le territoire mise sur la transition écologique, la protection des espaces naturels/agricoles et la gestion de l'eau."
+  },
+  {
+    question: "Comment nomme-t-on la partie du Pays Basque située en France ?",
+    options: ["Hegoalde", "Euskadi", "La Navarre", "Iparralde"],
+    answer: "Iparralde",
+    explanation: "'Iparralde' signifie littéralement 'le côté Nord' en basque. À l'inverse, le Pays Basque situé côté espagnol est appelé 'Hegoalde' (le côté Sud)."
+  },
+  {
+    question: "Quelle application mobile de la CAPB informe sur la qualité des eaux de baignade ?",
+    options: ["Kalilo", "BeachBask", "Océan Météo", "GeoBaignade"],
+    answer: "Kalilo",
+    explanation: "L'application Kalilo ('petit bateau' ou 'flotteur' en basque) permet de connaître en temps réel la couleur du drapeau et la qualité de l'eau des plages."
+  },
+  {
+    question: "Laquelle de ces villes fait partie du programme 'Petites Villes de Demain' ?",
+    options: ["Bayonne", "Ciboure", "Biarritz", "Mauléon-Licharre"],
+    answer: "Mauléon-Licharre",
+    explanation: "Ce programme vise à redynamiser les communes de moins de 20 000 habitants. Mauléon, capitale de la Soule, en bénéficie pour valoriser son centre-bourg et son patrimoine."
+  },
+  {
+    question: "Quelle langue, en plus du français et du basque, est reconnue par la CAPB ?",
+    options: ["L'espagnol", "L'anglais", "L'occitan gascon", "Le catalan"],
+    answer: "L'occitan gascon",
+    explanation: "Le Pays Basque Nord n'est pas uniquement de culture basque ! Le 'Bas-Adour' et certaines zones limitrophes sont historiquement de culture occitane (variante gasconne)."
+  },
+  {
+    question: "Environ quelle part de la population du Pays Basque vit sur la frange littorale ?",
+    options: ["La moitié", "Un quart", "La totalité", "Les trois quarts"],
+    answer: "Les trois quarts",
+    explanation: "Environ 75 % des habitants se concentrent sur seulement 15 % du territoire (la côte et ses alentours), ce qui crée de forts enjeux de logement et de transport."
+  },
+  {
+    question: "Le bassin transfrontalier de Txingudi réunit Hendaye et deux villes en Espagne. Lesquelles ?",
+    options: ["Saint-Sébastien et Pasaia", "Bilbao et Vitoria", "Irun et Hondarribia", "Pampelune et Elizondo"],
+    answer: "Irun et Hondarribia",
+    explanation: "Ces trois villes forment le 'Consorcio Bidasoa-Txingudi'. Elles partagent la même baie et le même fleuve (la Bidassoa) et collaborent au quotidien."
+  },
+  {
+    question: "Quelle est la particularité du tissu économique du Pays Basque (diversité) ?",
+    options: ["Dépendant de l'Espagne", "Ultra-spécialisé (aéro)", "Aucune industrie", "Diversité de secteurs (pas de mono-spécialisation)"],
+    answer: "Diversité de secteurs (pas de mono-spécialisation)",
+    explanation: "Le Pays Basque s'appuie sur une mosaïque de filières (agroalimentaire, aéronautique, glisse...). Cela rend son économie beaucoup plus résistante face aux crises !"
+  },
+  {
+    question: "Quel produit IGP doit obligatoirement être affiné dans le bassin de l'Adour ?",
+    options: ["Le Jambon de Bayonne", "Le gâteau basque", "Le fromage Ossau-Iraty", "Le piment d'Espelette"],
+    answer: "Le Jambon de Bayonne",
+    explanation: "Pour avoir l'IGP 'Jambon de Bayonne', l'étape cruciale du salage et de l'affinage DOIT obligatoirement se faire dans le bassin de l'Adour, pour bénéficier de 'l'effet de foehn'."
+  },
+  {
+    question: "De quoi est majoritairement composé le littoral basque (environ 40 km) ?",
+    options: ["Longues plages de sable", "Dunes et marais", "Ports industriels", "Falaises rocheuses"],
+    answer: "Falaises rocheuses",
+    explanation: "Contrairement à la côte landaise très plate, la côte basque est très découpée et rocheuse. Ce paysage pose des défis d'aménagement face à l'érosion marine !"
+  },
+  {
+    question: "Quel est le deuxième pôle économique de la région Nouvelle-Aquitaine ?",
+    options: ["Pau", "Le Pays Basque", "Limoges", "La Rochelle"],
+    answer: "Le Pays Basque",
+    explanation: "Juste derrière la métropole de Bordeaux, le Pays Basque s'impose comme le 2ème bassin d'emploi et pôle économique de la plus vaste région de France."
+  },
+  {
+    question: "Quelle est l'une des caractéristiques de la Soule, la province la plus à l'est ?",
+    options: ["Majorité de la population", "Abrite l'industrie historique de l'espadrille", "Plus d'emplois agricoles qu'industriels", "Aucune frontière espagnole"],
+    answer: "Abrite l'industrie historique de l'espadrille",
+    explanation: "La Soule (avec sa capitale Mauléon) est le berceau historique de l'espadrille ! Malgré son aspect rural, elle compte davantage d'emplois dans l'industrie que dans l'agriculture."
+  },
+  {
+    question: "Quelle grande ville espagnole est plus proche de Bayonne que ne l'est Bordeaux ?",
+    options: ["Barcelone", "Séville", "Madrid", "Bilbao"],
+    answer: "Bilbao",
+    explanation: "Bayonne n'est située qu'à environ 150 km de Bilbao, contre près de 190 km pour Bordeaux ! Cette proximité en fait un carrefour d'échanges incontournable."
+  }
+];
+
+// Kahoot Color Palette and Shapes
+const optionStyles = [
+  { bg: "bg-red-600 hover:bg-red-700", border: "border-red-700", icon: <Triangle className="text-white fill-white w-8 h-8 md:w-12 md:h-12" /> },
+  { bg: "bg-blue-600 hover:bg-blue-700", border: "border-blue-700", icon: <Diamond className="text-white fill-white w-8 h-8 md:w-12 md:h-12" /> },
+  { bg: "bg-yellow-500 hover:bg-yellow-600", border: "border-yellow-600", icon: <Circle className="text-white fill-white w-8 h-8 md:w-12 md:h-12" /> },
+  { bg: "bg-green-600 hover:bg-green-700", border: "border-green-700", icon: <Square className="text-white fill-white w-8 h-8 md:w-12 md:h-12" /> }
+];
+
+export default function App() {
+  const [gameState, setGameState] = useState('start'); // 'start', 'playing', 'explanation', 'end'
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  const startGame = () => {
+    setGameState('playing');
+    setCurrentQuestionIndex(0);
+    setScore(0);
+  };
+
+  const handleAnswerClick = (option) => {
+    if (gameState !== 'playing') return;
+    
+    const correct = option === quizData[currentQuestionIndex].answer;
+    setIsCorrect(correct);
+    setSelectedAnswer(option);
+    
+    if (correct) {
+      setScore(score + 1);
+    }
+    
+    setGameState('explanation');
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestionIndex < quizData.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setGameState('playing');
+      setSelectedAnswer(null);
+    } else {
+      setGameState('end');
+    }
+  };
+
+  // 1. START SCREEN
+  if (gameState === 'start') {
+    return (
+      <div className="min-h-screen bg-purple-600 flex flex-col items-center justify-center p-4 font-sans text-center">
+        <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-2xl w-full transform transition-all animate-bounce-slow">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-800 mb-6 tracking-tight">
+            Connais-Tu<br/><span className="text-purple-600">Ton Territoire ?</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-10 font-medium">
+            25 questions pour tester vos connaissances sur le Pays Basque !
+          </p>
+          <button 
+            onClick={startGame}
+            className="group relative inline-flex items-center justify-center px-10 py-5 text-2xl font-bold text-white bg-green-500 rounded-2xl overflow-hidden shadow-lg transition-transform hover:scale-105 active:scale-95"
+          >
+            <span className="absolute inset-0 w-full h-full -mt-1 rounded-2xl opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+            <span className="relative flex items-center gap-3">
+              Jouer <Play fill="currentColor" size={28} />
+            </span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. END SCREEN
+  if (gameState === 'end') {
+    const percentage = Math.round((score / quizData.length) * 100);
+    let message = "";
+    if (percentage === 100) message = "Zorionak ! Un vrai expert du Pays Basque ! 🏆";
+    else if (percentage >= 70) message = "Bravo ! Vous connaissez très bien votre territoire ! 🌟";
+    else if (percentage >= 40) message = "Pas mal ! Mais il reste encore des choses à découvrir. 📚";
+    else message = "C'est l'occasion parfaite d'en apprendre plus sur la région ! 🌱";
+
+    return (
+      <div className="min-h-screen bg-blue-500 flex flex-col items-center justify-center p-4 font-sans text-center">
+        <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-2xl w-full">
+          <Award className="w-24 h-24 text-yellow-500 mx-auto mb-6" />
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">Quiz Terminé !</h2>
+          <div className="text-6xl font-extrabold text-blue-600 mb-6">
+            {score} / {quizData.length}
+          </div>
+          <p className="text-2xl text-gray-700 mb-10 font-medium">{message}</p>
+          <button 
+            onClick={startGame}
+            className="inline-flex items-center gap-2 px-8 py-4 text-xl font-bold text-white bg-purple-600 rounded-2xl shadow-lg transition-transform hover:scale-105 active:scale-95"
+          >
+            <RotateCcw size={24} /> Rejouer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQuestion = quizData[currentQuestionIndex];
+
+  // 3. EXPLANATION SCREEN (Culture G)
+  if (gameState === 'explanation') {
+    return (
+      <div className={`min-h-screen flex flex-col p-4 md:p-8 font-sans transition-colors duration-500 ${isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
+        <div className="max-w-4xl w-full mx-auto mt-10 md:mt-20 flex-grow flex flex-col items-center text-center text-white">
+          
+          <div className="mb-8 animate-bounce">
+            {isCorrect ? <CheckCircle size={100} /> : <XCircle size={100} />}
+          </div>
+          
+          <h2 className="text-5xl md:text-6xl font-extrabold mb-10 shadow-sm">
+            {isCorrect ? "Bonne Réponse !" : "Mauvaise Réponse..."}
+          </h2>
+
+          {!isCorrect && (
+            <div className="bg-white text-gray-800 p-6 rounded-2xl w-full mb-8 shadow-xl">
+              <span className="text-xl font-semibold text-gray-500">La bonne réponse était :</span>
+              <p className="text-3xl font-bold mt-2">{currentQuestion.answer}</p>
+            </div>
+          )}
+
+          <div className="bg-white bg-opacity-20 backdrop-blur-md p-8 rounded-3xl w-full shadow-2xl border border-white border-opacity-30 text-left relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-2 h-full bg-yellow-400"></div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-yellow-400 p-3 rounded-full text-yellow-900">
+                <Lightbulb size={32} />
+              </div>
+              <h3 className="text-3xl font-bold text-white">Culture G / Le Saviez-Vous ?</h3>
+            </div>
+            <p className="text-xl md:text-2xl leading-relaxed font-medium">
+              {currentQuestion.explanation}
+            </p>
+          </div>
+
+          <button 
+            onClick={nextQuestion}
+            className="mt-12 group flex items-center gap-3 px-10 py-5 text-2xl font-bold text-gray-900 bg-white rounded-full shadow-2xl transition-all hover:bg-gray-100 hover:scale-105 active:scale-95"
+          >
+            {currentQuestionIndex < quizData.length - 1 ? "Question Suivante" : "Voir les résultats"} 
+            <ArrowRight className="group-hover:translate-x-2 transition-transform" size={28} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. PLAYING SCREEN
+  // Determine layout grid based on number of options
+  const gridClass = currentQuestion.options.length === 2 
+    ? "grid-cols-1 md:grid-cols-2 max-w-4xl" 
+    : "grid-cols-1 md:grid-cols-2 max-w-6xl";
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
+      {/* Header Info */}
+      <div className="flex justify-between items-center p-4 md:p-6 bg-white shadow-md z-10">
+        <div className="text-xl md:text-2xl font-bold text-gray-700">
+          Question {currentQuestionIndex + 1} / {quizData.length}
+        </div>
+        <div className="bg-purple-600 text-white px-6 py-2 rounded-full font-bold text-xl md:text-2xl shadow-inner">
+          Score: {score}
+        </div>
+      </div>
+
+      {/* Question Area */}
+      <div className="flex-grow flex flex-col items-center justify-center p-4 md:p-8">
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-8 md:mb-16 w-full max-w-5xl text-center border-b-8 border-gray-200">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-800 leading-tight">
+            {currentQuestion.question}
+          </h2>
+        </div>
+
+        {/* Answers Grid */}
+        <div className={`grid ${gridClass} gap-4 w-full`}>
+          {currentQuestion.options.map((option, index) => {
+            const style = optionStyles[index % optionStyles.length];
+            return (
+              <button
+                key={index}
+                onClick={() => handleAnswerClick(option)}
+                className={`relative flex items-center p-6 md:p-8 rounded-2xl shadow-md border-b-8 active:border-b-0 active:translate-y-2 transition-all ${style.bg} ${style.border} overflow-hidden group`}
+              >
+                <div className="mr-6 shrink-0 transition-transform group-hover:scale-110">
+                  {style.icon}
+                </div>
+                <span className="text-2xl md:text-4xl font-bold text-white text-left break-words w-full drop-shadow-md">
+                  {option}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
