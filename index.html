@@ -3,654 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz : Connais-Tu Ton Territoire ?</title>
-    <!-- Tailwind CSS pour le style -->
+    <title>Trouve ta place sur le territoire - Quiz</title>
+    <!-- Chargement de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        'bounce-slow': 'bounce 3s infinite',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Chargement des icônes Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Transitions douces pour l'affichage des écrans */
-        .screen {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+        /* Animations personnalisées */
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .screen.active {
-            display: flex;
-            opacity: 1;
+        .animate-fade-in-up {
+            animation: fadeInSlideUp 0.5s ease-out forwards;
         }
-        /* Loader pour l'attente */
-        .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid #8b5cf6; border-radius: 50%;
-            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="font-sans antialiased text-gray-900 bg-gray-100 min-h-screen selection:bg-purple-300">
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- 1. ÉCRAN DE DÉMARRAGE -->
-    <div id="start-screen" class="screen active min-h-screen bg-purple-600 flex-col items-center justify-center p-4 text-center">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-2xl w-full transform transition-all animate-bounce-slow">
-            <h1 class="text-5xl md:text-6xl font-extrabold text-gray-800 mb-6 tracking-tight">
-                Connais-Tu<br/><span class="text-purple-600">Ton Territoire ?</span>
-            </h1>
-            <p class="text-xl text-gray-600 mb-8 font-medium">
-                Jouez en Solo ou défiez vos amis en direct !
+    <!-- ÉCRAN D'ACCUEIL -->
+    <div id="start-screen" class="flex-1 flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center border-t-8 border-indigo-600">
+            <h1 class="text-4xl font-bold text-slate-900 mb-4">Trouve ta place sur le territoire</h1>
+            <h2 class="text-2xl text-indigo-600 font-medium mb-8">Quiz Interactif : Connais-tu ton territoire ?</h2>
+            <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                Un atelier interactif pour découvrir les ressources, l'économie et les spécificités du Pays Basque Nord. 
+                Préparez vos smartphones pour voter !
             </p>
-            <div class="flex flex-col gap-4 max-w-sm mx-auto">
-                <button onclick="startSolo()" class="w-full py-4 text-xl font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-md transition-transform hover:scale-105">
-                    Jouer en Solo
-                </button>
-                <div class="flex items-center my-2 text-gray-400 font-bold"><hr class="flex-grow border-gray-300"> <span class="px-3">OU MULTIJOUEUR</span> <hr class="flex-grow border-gray-300"></div>
-                <button onclick="showHostSetup()" class="w-full py-4 text-xl font-bold text-white bg-green-500 hover:bg-green-600 rounded-2xl shadow-md transition-transform hover:scale-105 flex justify-center items-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    Héberger une partie (Hôte)
-                </button>
-                <button onclick="showJoinSetup()" class="w-full py-4 text-xl font-bold text-gray-800 bg-yellow-400 hover:bg-yellow-500 rounded-2xl shadow-md transition-transform hover:scale-105">
-                    Rejoindre une partie
-                </button>
-            </div>
-            <div id="firebase-status" class="mt-4 text-sm text-gray-400">Connexion aux serveurs en cours...</div>
-        </div>
-    </div>
-
-    <!-- 2. ÉCRAN REJOINDRE (JOUEUR) -->
-    <div id="join-screen" class="screen min-h-screen bg-yellow-400 flex-col items-center justify-center p-4 text-center">
-        <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">Rejoindre</h2>
-            <input type="text" id="join-pin" placeholder="Code PIN (ex: 1234)" class="w-full text-center text-3xl font-bold p-4 border-4 border-gray-200 rounded-xl mb-4 focus:border-yellow-400 outline-none uppercase" maxlength="4">
-            <input type="text" id="join-pseudo" placeholder="Votre Pseudo" class="w-full text-center text-2xl font-bold p-4 border-4 border-gray-200 rounded-xl mb-6 focus:border-yellow-400 outline-none" maxlength="12">
-            <button onclick="joinGame()" class="w-full py-4 text-2xl font-bold text-white bg-gray-900 rounded-xl shadow-lg hover:scale-105 transition-transform">
-                Entrer
+            <button onclick="startQuiz()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-full text-xl transition-all shadow-lg hover:shadow-indigo-200">
+                <i data-lucide="play-circle" class="w-7 h-7"></i>
+                Démarrer le Quiz
             </button>
-            <button onclick="showScreen('start-screen')" class="mt-4 text-gray-500 font-bold underline">Retour</button>
         </div>
     </div>
 
-    <!-- 3. ÉCRAN LOBBY HÔTE -->
-    <div id="host-lobby-screen" class="screen min-h-screen bg-gray-900 flex-col items-center p-4 md:p-8">
-        <div class="w-full max-w-4xl bg-white rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden mt-10">
-            <div class="absolute top-0 left-0 w-full h-4 bg-green-500"></div>
-            <p class="text-xl text-gray-500 font-bold uppercase tracking-widest mb-2">Rejoignez la partie !</p>
-            <h2 class="text-7xl font-extrabold text-gray-800 tracking-tighter mb-8" id="display-pin">----</h2>
+    <!-- ÉCRAN DU QUIZ (Caché au démarrage) -->
+    <div id="quiz-screen" class="hidden flex-1 flex flex-col">
+        <!-- En-tête -->
+        <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center border-b border-slate-200">
+            <div class="font-bold text-xl text-indigo-700 flex items-center gap-2">
+                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm">Mission Locale</span>
+                Quiz Territoire
+            </div>
+            <div id="progress-text" class="text-slate-500 font-medium bg-slate-100 px-4 py-1.5 rounded-full">
+                Question 1 / 35
+            </div>
+        </header>
+
+        <!-- Contenu Principal -->
+        <main class="flex-1 flex flex-col items-center p-6 max-w-5xl mx-auto w-full">
             
-            <div class="bg-gray-100 rounded-2xl p-6 min-h-[200px] mb-8">
-                <h3 class="text-2xl font-bold text-gray-700 mb-4">Joueurs connectés (<span id="player-count">0</span>)</h3>
-                <div id="player-list" class="flex flex-wrap justify-center gap-3">
-                    <!-- Noms des joueurs injectés ici -->
-                    <p class="text-gray-400 italic w-full">En attente des joueurs...</p>
+            <!-- Carte Question -->
+            <div class="w-full bg-white rounded-3xl shadow-lg p-8 md:p-12 mb-6 text-center border-t-4 border-indigo-500 transition-all">
+                <h2 id="question-text" class="text-3xl md:text-4xl font-bold text-slate-800 leading-tight mb-8">
+                    <!-- La question sera injectée ici -->
+                </h2>
+
+                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                    <!-- Les options seront injectées ici -->
                 </div>
             </div>
 
-            <button onclick="hostStartGame()" class="px-12 py-5 text-2xl font-bold text-white bg-green-500 rounded-full shadow-lg hover:scale-105 transition-transform">
-                Démarrer la partie !
-            </button>
-        </div>
-    </div>
-
-    <!-- 4. ÉCRAN LOBBY JOUEUR -->
-    <div id="player-lobby-screen" class="screen min-h-screen bg-green-500 flex-col items-center justify-center p-4 text-center text-white">
-        <h2 class="text-5xl font-extrabold mb-4">Vous êtes connecté !</h2>
-        <p class="text-2xl font-medium mb-10">Regardez l'écran principal en attendant le début...</p>
-        <div class="loader border-white border-t-green-200"></div>
-    </div>
-
-    <!-- 5. ÉCRAN QUESTION (HÔTE OU SOLO) -->
-    <div id="playing-screen" class="screen min-h-screen bg-gray-100 flex-col w-full">
-        <div class="flex justify-between items-center p-4 md:p-6 bg-white shadow-md z-10 w-full">
-            <div id="question-counter" class="text-xl md:text-2xl font-bold text-gray-700">Question</div>
-            <div id="top-right-indicator" class="bg-purple-600 text-white px-6 py-2 rounded-full font-bold text-xl md:text-2xl shadow-inner">
-                Score: 0
-            </div>
-        </div>
-
-        <div class="flex-grow flex flex-col items-center justify-center p-4 md:p-8 w-full">
-            <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-8 md:mb-16 w-full max-w-5xl text-center border-b-8 border-gray-200 relative">
-                <h2 id="question-text" class="text-3xl md:text-5xl font-bold text-gray-800 leading-tight"></h2>
+            <!-- Panneau d'attente (QR Code) -->
+            <div id="waiting-panel" class="w-full flex justify-center items-center py-8 opacity-60">
+                <div class="flex flex-col items-center text-slate-500 gap-2 animate-pulse">
+                    <i data-lucide="qr-code" class="w-12 h-12"></i>
+                    <p class="font-medium text-lg">C'est le moment de voter !</p>
+                </div>
             </div>
 
-            <div id="options-grid" class="grid gap-4 w-full max-w-6xl">
-                <!-- Boutons générés en JS -->
+            <!-- Panneau Culture G (Caché par défaut) -->
+            <div id="culture-g-panel" class="hidden w-full bg-amber-50 border border-amber-200 rounded-2xl p-6 md:p-8 shadow-sm animate-fade-in-up">
+                <div class="flex gap-4 items-start">
+                    <div class="bg-amber-100 p-3 rounded-full shrink-0">
+                        <i data-lucide="info" class="text-amber-600 w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-amber-800 mb-2">Le saviez-vous ?</h3>
+                        <p id="culture-text" class="text-lg text-amber-900 leading-relaxed">
+                            <!-- L'anecdote sera injectée ici -->
+                        </p>
+                    </div>
+                </div>
             </div>
+        </main>
 
-            <!-- Contrôles Hôte uniquement -->
-            <div id="host-controls" class="mt-8 w-full max-w-5xl flex justify-between items-center hidden">
-                <div class="text-2xl font-bold text-gray-600"><span id="answers-received">0</span> réponses reçues</div>
-                <button onclick="hostShowAnswer()" class="px-8 py-4 text-xl font-bold text-white bg-blue-600 rounded-xl shadow-lg hover:bg-blue-700 transition-all">
+        <!-- Contrôles du Footer -->
+        <footer class="bg-white border-t border-slate-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <div class="max-w-5xl mx-auto flex justify-between items-center w-full">
+                <button id="btn-prev" onclick="handlePrev()" class="flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    Précédent
+                </button>
+
+                <button id="btn-toggle-answer" onclick="toggleAnswer()" class="px-8 py-4 rounded-xl font-bold text-lg shadow-md transition-all bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-1">
                     Afficher la réponse
                 </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- 6. ÉCRAN QUESTION (JOUEUR) -->
-    <div id="player-question-screen" class="screen min-h-screen bg-gray-100 flex-col w-full justify-center p-4">
-        <div id="player-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl mx-auto h-[70vh]">
-            <!-- Gros boutons colorés générés ici -->
-        </div>
-    </div>
-
-    <!-- 7. ÉCRAN ATTENTE JOUEUR (après avoir répondu) -->
-    <div id="player-waiting-screen" class="screen min-h-screen bg-purple-600 flex-col items-center justify-center p-4 text-center text-white">
-        <h2 class="text-4xl font-bold mb-6">Réponse enregistrée !</h2>
-        <p class="text-xl mb-10">En attente des autres joueurs...</p>
-        <div class="loader"></div>
-    </div>
-
-    <!-- 8. ÉCRAN EXPLICATION / RÉPONSE (HÔTE OU SOLO) -->
-    <div id="explanation-screen" class="screen min-h-screen flex-col p-4 md:p-8 transition-colors duration-500 w-full">
-        <div class="max-w-4xl w-full mx-auto mt-10 flex-grow flex flex-col items-center text-center text-white">
-            <div id="feedback-icon" class="mb-4"></div>
-            <h2 id="feedback-title" class="text-5xl md:text-6xl font-extrabold mb-6 shadow-sm"></h2>
-
-            <div id="correct-answer-container" class="bg-white text-gray-800 p-6 rounded-2xl w-full mb-6 shadow-xl hidden">
-                <span class="text-xl font-semibold text-gray-500">La bonne réponse était :</span>
-                <p id="correct-answer-text" class="text-3xl font-bold mt-2"></p>
-            </div>
-
-            <div class="bg-white bg-opacity-20 backdrop-blur-md p-6 rounded-3xl w-full shadow-2xl border border-white border-opacity-30 text-left relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-2 h-full bg-yellow-400"></div>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="bg-yellow-400 p-2 rounded-full text-yellow-900">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white">Culture G / Le Saviez-Vous ?</h3>
-                </div>
-                <p id="explanation-text" class="text-xl leading-relaxed font-medium"></p>
-            </div>
-
-            <!-- Actions Hôte / Solo -->
-            <button id="btn-next-action" onclick="handleNextAction()" class="mt-8 group flex items-center gap-3 px-8 py-4 text-xl font-bold text-gray-900 bg-white rounded-full shadow-2xl transition-all hover:bg-gray-100 hover:scale-105 active:scale-95">
-                <span id="next-button-text">Action Suivante</span>
-                <svg class="w-6 h-6 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- 9. ÉCRAN RÉSULTAT JOUEUR -->
-    <div id="player-result-screen" class="screen min-h-screen flex-col items-center justify-center p-4 text-center text-white transition-colors duration-500">
-        <div id="player-result-icon" class="mb-6 animate-bounce"></div>
-        <h2 id="player-result-title" class="text-5xl font-extrabold mb-4"></h2>
-        <div id="player-result-score" class="text-2xl font-bold bg-white bg-opacity-20 rounded-full px-6 py-2"></div>
-        <p class="mt-8 text-lg opacity-80">Regardez l'écran pour les explications...</p>
-    </div>
-
-    <!-- 10. ÉCRAN LEADERBOARD (HÔTE) -->
-    <div id="leaderboard-screen" class="screen min-h-screen bg-blue-600 flex-col items-center p-4 md:p-8">
-        <div class="w-full max-w-3xl mt-10 bg-white rounded-3xl p-8 shadow-2xl">
-            <h2 class="text-5xl font-extrabold text-center text-gray-800 mb-8">Classement</h2>
-            <div id="leaderboard-list" class="flex flex-col gap-3 mb-8">
-                <!-- Items injectés ici -->
-            </div>
-            <div class="text-center">
-                <button onclick="hostNextQuestion()" class="px-10 py-4 text-xl font-bold text-white bg-blue-500 hover:bg-blue-700 rounded-full shadow-lg transition-transform hover:scale-105">
-                    Question Suivante
+                <button id="btn-next" onclick="handleNext()" class="flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors">
+                    Suivant
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
                 </button>
             </div>
-        </div>
+        </footer>
     </div>
 
-    <!-- 11. ÉCRAN LEADERBOARD (JOUEUR) -->
-    <div id="player-leaderboard-screen" class="screen min-h-screen bg-blue-500 flex-col items-center justify-center p-4 text-center text-white">
-        <h2 class="text-4xl font-bold mb-4">Votre Position</h2>
-        <div class="text-8xl font-extrabold text-yellow-300 drop-shadow-md mb-4" id="player-rank">#1</div>
-        <p class="text-2xl font-medium mb-10">Score : <span id="player-lb-score">0</span></p>
-        <div class="loader"></div>
-    </div>
-
-    <!-- FIN -->
-    <div id="end-screen" class="screen min-h-screen bg-blue-500 flex-col items-center justify-center p-4 text-center text-white">
-        <div class="bg-white text-gray-900 p-10 rounded-3xl shadow-2xl max-w-2xl w-full">
-            <svg class="w-24 h-24 text-yellow-500 mx-auto mb-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
-            <h2 class="text-4xl font-bold mb-4">Quiz Terminé !</h2>
-            <div class="text-6xl font-extrabold text-blue-600 mb-6" id="final-score-display"></div>
-            <p id="end-message" class="text-2xl mb-10 font-medium"></p>
-            <button onclick="resetApp()" class="inline-flex items-center gap-2 px-8 py-4 text-xl font-bold text-white bg-purple-600 rounded-2xl shadow-lg transition-transform hover:scale-105">
-                Accueil
-            </button>
-        </div>
-    </div>
-
-
-    <!-- ================= LOGIQUE JAVASCRIPT & FIREBASE ================= -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // DONNÉES DU QUIZ
+    <!-- Script de l'application -->
+    <script>
+        // Base de données complète des questions
         const quizData = [
-            { question: "Combien de provinces historiques composent le Pays Basque Nord ?", options: ["4", "5", "3", "7"], answer: "3", explanation: "Le Pays Basque Nord (Iparralde) est composé du Labourd, de la Basse-Navarre et de la Soule. Si l'on ajoute les 4 provinces du Sud situées en Espagne, on arrive au chiffre symbolique de 7 provinces." },
-            { question: "Quelle est la caractéristique principale de 96 % des entreprises installées au Pays Basque ?", options: ["Plus de 100 salariés", "Tourisme uniquement", "Moins de 10 salariés", "Toutes liées au surf"], answer: "Moins de 10 salariés", explanation: "Le tissu économique local est essentiellement composé de TPE. À l'inverse des idées reçues, ces petites structures représentent un emploi sur deux." },
-            { question: "Le secteur du tourisme emploie plus de personnes que le secteur de l'industrie au Pays Basque ?", options: ["Vrai", "Faux"], answer: "Faux", explanation: "Malgré la forte notoriété touristique, l'industrie emploie davantage de personnes que le tourisme. L'économie basque possède une forte culture de production." },
-            { question: "Quelle entreprise est le plus gros employeur privé du Pays Basque (environ 900 salariés) ?", options: ["L'Hôpital de Bayonne", "Carrefour", "Quiksilver", "Dassault Aviation"], answer: "Dassault Aviation", explanation: "Située à Anglet, Dassault Aviation est le fer de lance du secteur Aéronautique, l'un des 10 secteurs clés." },
-            { question: "Comment s'appelle la monnaie locale du Pays Basque, la plus importante d'Europe ?", options: ["L'Euro Basque", "L'Eusko", "Le Makila", "Le Pas-Basque"], answer: "L'Eusko", explanation: "L'Eusko illustre la volonté des habitants d'être acteurs de leur économie et de soutenir les circuits courts." },
-            { question: "Les fermes au Pays Basque sont en moyenne deux fois plus petites que les fermes françaises ?", options: ["Faux", "Vrai"], answer: "Vrai", explanation: "L'agriculture basque est marquée par des exploitations de petite taille, souvent familiales, ce qui maintient un dynamisme rural fort." },
-            { question: "Quel pourcentage de la population du Pays Basque Nord est aujourd'hui bascophone ?", options: ["5 %", "50 %", "80 %", "20 %"], answer: "20 %", explanation: "Si 20 % de la population parle le basque, la dynamique est forte chez les jeunes : 1 élève sur 4 est dans un système bilingue." },
-            { question: "Quel port basque est le premier port de France pour la pêche au thon et au merlu ?", options: ["Saint-Jean-de-Luz", "Bayonne", "Hendaye", "Biarritz"], answer: "Saint-Jean-de-Luz", explanation: "L'activité de pêche est historique. Les marins basques partaient autrefois jusqu'à Terre-Neuve pour chasser la baleine." },
-            { question: "Quel est le plus gros employeur public du territoire ?", options: ["L'Hôpital de la Côte Basque", "L'Agglomération (CAPB)", "L’Éducation Nationale", "La Ville de Bayonne"], answer: "L'Hôpital de la Côte Basque", explanation: "Avec environ 3 500 salariés, l'Hôpital de Bayonne est le premier employeur public." },
-            { question: "Combien de camions de marchandises transitent par la frontière chaque jour ?", options: ["1 000", "10 000", "50 000", "Aucun (tout par train)"], answer: "10 000", explanation: "Le Pays Basque est un axe de transit européen majeur entre la péninsule ibérique et le reste de l'Europe." },
-            { question: "Quand la Communauté d'Agglomération Pays Basque (CAPB) a-t-elle été créée ?", options: ["Janvier 2006", "Janvier 2000", "Janvier 2017", "Janvier 2020"], answer: "Janvier 2017", explanation: "La CAPB est née de la fusion de 10 anciennes intercommunalités, dotant pour la première fois Iparralde d'une institution unique." },
-            { question: "Combien de communes regroupe la CAPB ?", options: ["21", "10", "158", "50"], answer: "158", explanation: "Avec ses 158 communes, la CAPB est l'une des plus vastes agglomérations de France." },
-            { question: "Comment nomme-t-on la partie du Pays Basque située en France ?", options: ["Hegoalde", "Euskadi", "La Navarre", "Iparralde"], answer: "Iparralde", explanation: "'Iparralde' signifie 'le côté Nord' en basque. Le côté espagnol est appelé 'Hegoalde' (côté Sud)." },
-            { question: "Quelle application de la CAPB informe sur la qualité des eaux de baignade ?", options: ["Kalilo", "BeachBask", "Océan Météo", "GeoBaignade"], answer: "Kalilo", explanation: "Kalilo permet de connaître en temps réel la couleur du drapeau et la qualité de l'eau des plages basques." },
-            { question: "Quelle langue, en plus du français et du basque, est reconnue par la CAPB ?", options: ["L'espagnol", "L'anglais", "L'occitan gascon", "Le catalan"], answer: "L'occitan gascon", explanation: "Le 'Bas-Adour' et certaines zones limitrophes sont historiquement de culture et de langue occitane (variante gasconne)." },
-            { question: "Environ quelle part de la population basque vit sur la frange littorale ?", options: ["La moitié", "Un quart", "La totalité", "Les trois quarts"], answer: "Les trois quarts", explanation: "Environ 75 % des habitants se concentrent sur seulement 15 % du territoire (la côte), créant de forts enjeux de logement." },
-            { question: "Le bassin de Txingudi réunit Hendaye et deux villes en Espagne. Lesquelles ?", options: ["San Sebastian et Pasaia", "Bilbao et Vitoria", "Irun et Hondarribia", "Pampelune et Elizondo"], answer: "Irun et Hondarribia", explanation: "Ces trois villes partagent la même baie et le même fleuve (la Bidassoa) et collaborent au quotidien." },
-            { question: "Quelle est la particularité de l'économie basque ?", options: ["Dépendante de l'Espagne", "Ultra-spécialisée (aéro)", "Diversifiée (pas de mono-spécialisation)", "Purement touristique"], answer: "Diversifiée (pas de mono-spécialisation)", explanation: "Elle s'appuie sur une mosaïque de filières (agroalimentaire, aéronautique, glisse...) la rendant très résistante aux crises." },
-            { question: "Quel produit IGP doit OBLIGATOIREMENT être affiné dans le bassin de l'Adour ?", options: ["Le Jambon de Bayonne", "Le gâteau basque", "Le fromage Ossau-Iraty", "Le piment d'Espelette"], answer: "Le Jambon de Bayonne", explanation: "Pour bénéficier de l'effet de foehn (vent chaud du sud), le salage et l'affinage doivent se faire dans ce bassin." },
-            { question: "De quoi est majoritairement composé le littoral basque ?", options: ["Plages de sable plat", "Dunes et marais", "Falaises rocheuses", "Ports industriels"], answer: "Falaises rocheuses", explanation: "Contrairement à la côte landaise très plate, la côte basque est très découpée, posant des défis face à l'érosion." },
-            { question: "Quelle grande ville espagnole est plus proche de Bayonne que Bordeaux ?", options: ["Barcelone", "Séville", "Madrid", "Bilbao"], answer: "Bilbao", explanation: "Bayonne n'est située qu'à environ 150 km de Bilbao, contre près de 190 km pour Bordeaux !" }
+            {
+                question: "Combien de provinces historiques composent le Pays Basque Nord ?",
+                options: ["4", "5", "3", "7"],
+                correctIndex: 2,
+                cultureG: "Le Pays Basque Nord (Iparralde) est composé du Labourd, de la Basse-Navarre et de la Soule. Si l'on ajoute les 4 provinces du Sud (Hegoalde) en Espagne, on arrive au chiffre symbolique de 7 provinces ('Zazpiak Bat')."
+            },
+            {
+                question: "Quelle est la caractéristique principale de 96 % des entreprises installées au Pays Basque ?",
+                options: ["Elles ne travaillent que dans le tourisme", "Elles appartiennent à des grands groupes mondiaux", "Elles emploient moins de 10 salariés", "Elles sont situées uniquement sur le littoral"],
+                correctIndex: 2,
+                cultureG: "Le tissu économique local est essentiellement composé de TPE (Très Petites Entreprises). À l'inverse des idées reçues, ces petites structures représentent un emploi sur deux sur le territoire."
+            },
+            {
+                question: "Vrai ou Faux : Le secteur du tourisme emploie plus de personnes que le secteur de l'industrie au Pays Basque ?",
+                options: ["Faux", "Vrai"],
+                correctIndex: 0,
+                cultureG: "Malgré la forte notoriété touristique de la région, l'industrie emploie davantage de personnes que le tourisme. L'économie basque possède une forte culture de production et de fabrication."
+            },
+            {
+                question: "Quelle entreprise est le plus gros employeur privé du Pays Basque (environ 900 salariés) ?",
+                options: ["L'Hôpital de Bayonne", "Carrefour", "Quiksilver", "Dassault Aviation"],
+                correctIndex: 3,
+                cultureG: "Située à Anglet, Dassault Aviation est le fer de lance du secteur Aéronautique, mécanique et métallurgie, l'un des 10 secteurs clés identifiés pour le territoire."
+            },
+            {
+                question: "En Soule, quel secteur d'activité compte le plus d'emplois directs ?",
+                options: ["Le commerce", "L'industrie", "Le tourisme", "L'agriculture"],
+                correctIndex: 1,
+                cultureG: "Contrairement aux clichés sur les zones rurales, il y a plus d'emplois industriels que d'emplois agricoles en Soule. C'est un héritage de l'activité minière et de l'exploitation du bois."
+            },
+            {
+                question: "Comment s'appelle la monnaie locale du Pays Basque, aujourd'hui la plus importante d'Europe ?",
+                options: ["L'Euro Basque", "L'Eusko", "Le Makila", "Le Pas-Basque"],
+                correctIndex: 1,
+                cultureG: "L'utilisation d'une monnaie locale comme l'Eusko illustre la volonté des habitants d'être acteurs de leur économie par leurs achats et de soutenir les circuits courts."
+            },
+            {
+                question: "Tu cherches une formation d'ingénieur spécialisée à Bidart. Quel site dois-tu visiter ?",
+                options: ["Le site Izarbel (ESTIA)", "CréaLuz", "La Technocité", "Arkinova"],
+                correctIndex: 0,
+                cultureG: "Le technopôle Izarbel accueille l'école d'ingénieurs ESTIA. C'est le cœur de l'innovation numérique du territoire, favorisant les échanges entre recherche, formation et entreprises."
+            },
+            {
+                question: "Vrai ou Faux : Les fermes au Pays Basque sont en moyenne deux fois plus petites que les fermes françaises ?",
+                options: ["Faux", "Vrai"],
+                correctIndex: 1,
+                cultureG: "L'agriculture basque est marquée par des exploitations de petite taille, souvent familiales. L'attachement à la terre a permis de maintenir une activité agro-pastorale dynamique."
+            },
+            {
+                question: "Quel pourcentage de la population du Pays Basque Nord est aujourd'hui bascophone (parle la langue basque) ?",
+                options: ["5 %", "50 %", "80 %", "20 %"],
+                correctIndex: 3,
+                cultureG: "Si 20 % de la population parle le basque (Euskara), la dynamique est forte chez les jeunes : 1 élève sur 4 est aujourd'hui scolarisé dans un système immersif ou bilingue."
+            },
+            {
+                question: "Dans quel domaine spécifique travaille la technopôle Arkinova située à Anglet ?",
+                options: ["La transformation du fromage de brebis", "La construction durable et l'éco-construction", "La fabrication de planches de surf", "Le développement d'applications mobiles"],
+                correctIndex: 1,
+                cultureG: "Arkinova est dédiée aux métiers de la construction et de l'aménagement durable. C'est un secteur clé qui répond aux défis de l'attractivité du territoire."
+            },
+            {
+                question: "Lequel de ces produits possède une AOP (Appellation d'Origine Protégée) au Pays Basque ?",
+                options: ["Le chocolat de Bayonne", "Le jambon de Bayonne", "Le piment d’Espelette", "Le gâteau basque"],
+                correctIndex: 2,
+                cultureG: "Le piment d'Espelette bénéficie d'une AOP garantissant qu'il est cultivé, transformé et conditionné dans une zone très précise de 10 communes du Pays Basque. (Le Jambon de Bayonne a une IGP)."
+            },
+            {
+                question: "Quelle ville est célèbre pour sa tradition thermale et ses établissements de thalassothérapie historique ?",
+                options: ["Hasparren", "Saint-Palais", "Mauléon", "Cambo-les-Bains"],
+                correctIndex: 3,
+                cultureG: "Cambo-les-Bains est l'unique station thermale du Pays Basque. Elle est réputée depuis des siècles pour les bienfaits de ses eaux, et a notamment accueilli Edmond Rostand."
+            },
+            {
+                question: "Dans quel village peut-on trouver l’atelier Ainciart Bergara qui fabrique des makhilas (bâtons de marche) depuis 7 générations ?",
+                options: ["Sare", "Larressore", "Itxassou", "Espelette"],
+                correctIndex: 1,
+                cultureG: "L'atelier Ainciart Bergara de Larressore fabrique des makhilas, le bâton de marche traditionnel basque. C'est un savoir-faire artisanal d'excellence reconnu dans le monde entier."
+            },
+            {
+                question: "Quel port basque est le premier port de France pour la pêche au thon et au merlu ?",
+                options: ["Saint-Jean-de-Luz / Ciboure", "Bayonne", "Hendaye", "Biarritz"],
+                correctIndex: 0,
+                cultureG: "L'activité de pêche est historique. Si elle se concentre aujourd'hui sur le thon et le merlu, les marins basques partaient autrefois jusqu'à Terre-Neuve pour chasser la baleine."
+            },
+            {
+                question: "Quel est le plus gros employeur public du territoire ?",
+                options: ["Le Centre Hospitalier (CHCB)", "La Communauté d'Agglomération", "L’Éducation Nationale", "La Ville de Bayonne"],
+                correctIndex: 0,
+                cultureG: "Avec environ 3 500 salariés, l'Hôpital de Bayonne est le premier employeur public, devant l'Éducation Nationale et la Communauté d'Agglomération."
+            },
+            {
+                question: "Quelle province est historiquement liée à la fabrication de l’espadrille ?",
+                options: ["Le Guipuscoa", "La Basse-Navarre", "La Soule", "Le Labourd"],
+                correctIndex: 2,
+                cultureG: "Mauléon, en Soule, est la capitale incontestée de l'espadrille. Au début du XXe siècle, cette industrie faisait vivre des milliers d'ouvriers dans la vallée."
+            },
+            {
+                question: "Quelle est la particularité du transport de marchandises au passage transfrontalier chaque jour ?",
+                options: ["Tous les camions s’arrêtent au centre de fret", "10 000 camions circulent quotidiennement", "Le transport est uniquement ferroviaire", "Il n’y a plus de douane donc plus de transit"],
+                correctIndex: 1,
+                cultureG: "Le Pays Basque est un axe de transit européen majeur entre la péninsule ibérique et le reste de l'Europe, ce qui explique ce flux intense (et parfois problématique) de marchandises."
+            },
+            {
+                question: "Quelle entreprise de transport frigorifique a son siège historique à Saint-Jean-de-Luz ?",
+                options: ["Olano", "STEF", "Petit Forestier", "Transports Lahaye"],
+                correctIndex: 0,
+                cultureG: "Le secteur Transport & Logistique est l'un des moteurs de l'économie locale, profitant de la position stratégique du territoire à la frontière espagnole."
+            },
+            {
+                question: "Quand la Communauté d'Agglomération Pays Basque (CAPB) a-t-elle été officiellement créée ?",
+                options: ["Janvier 2006", "Janvier 2000", "Janvier 2017", "Janvier 2020"],
+                correctIndex: 2,
+                cultureG: "La CAPB est née le 1er janvier 2017 de la fusion de 10 anciennes intercommunalités. Cela a permis de doter le Pays Basque Nord d'une institution unique à l'échelle de son territoire."
+            },
+            {
+                question: "Combien de communes regroupe la Communauté d'Agglomération Pays Basque ?",
+                options: ["21", "10", "158", "50"],
+                correctIndex: 2,
+                cultureG: "Avec ses 158 communes, la CAPB est l'une des plus vastes communautés d'agglomération de France. Elle s'étend du littoral très dense jusqu'aux petits villages isolés de la Soule."
+            },
+            {
+                question: "Quel est l'un des trois axes principaux du projet de territoire de la CAPB ?",
+                options: ["Préserver nos ressources", "Développer le tourisme de masse", "Augmenter l'usage de la voiture", "Concentrer des emplois sur le littoral"],
+                correctIndex: 0,
+                cultureG: "Face aux défis climatiques et à la pression foncière, le territoire mise sur la transition écologique, la protection des espaces naturels/agricoles et la gestion de l'eau."
+            },
+            {
+                question: "Comment nomme-t-on la partie du Pays Basque située en France ?",
+                options: ["Hegoalde", "Euskadi", "La Navarre", "Iparralde"],
+                correctIndex: 3,
+                cultureG: "'Iparralde' signifie littéralement 'le côté Nord' en basque. À l'inverse, le Pays Basque situé côté espagnol est appelé 'Hegoalde' (le côté Sud)."
+            },
+            {
+                question: "Quelle est l'application mobile mise en place par la CAPB pour informer sur la qualité des eaux de baignade ?",
+                options: ["Kalilo", "BeachBask", "Océan Météo", "GeoBaignade"],
+                correctIndex: 0,
+                cultureG: "L'application Kalilo ('petit bateau' ou 'flotteur' en basque) permet de connaître en temps réel la couleur du drapeau et la qualité de l'eau des plages de la côte basque."
+            },
+            {
+                question: "Parmi les villes suivantes, laquelle fait partie du programme 'Petites Villes de Demain' ?",
+                options: ["Bayonne", "Ciboure", "Biarritz", "Mauléon-Licharre"],
+                correctIndex: 3,
+                cultureG: "Ce programme national vise à redynamiser les communes de moins de 20 000 habitants. Mauléon en bénéficie pour valoriser son centre-bourg et son commerce de proximité."
+            },
+            {
+                question: "Quelle langue, en plus du français et du basque, est officiellement reconnue comme langue du territoire par la CAPB ?",
+                options: ["L'espagnol", "L'anglais", "L'occitan gascon", "Le catalan"],
+                correctIndex: 2,
+                cultureG: "Le Pays Basque Nord n'est pas uniquement de culture basque ! Le 'Bas-Adour' (Bayonne, Anglet, Boucau...) est historiquement de culture et de langue occitane (variante gasconne)."
+            },
+            {
+                question: "Environ quelle part de la population du Pays Basque vit sur la frange littorale et rétro-littorale ?",
+                options: ["La moitié", "Un quart", "La totalité", "Les trois quarts"],
+                correctIndex: 3,
+                cultureG: "La répartition de la population est très déséquilibrée : environ 75 % des habitants se concentrent sur seulement 15 % du territoire (la côte), ce qui crée de forts enjeux de logement."
+            },
+            {
+                question: "Le bassin de vie transfrontalier de Txingudi réunit Hendaye et deux villes en Espagne. Lesquelles ?",
+                options: ["Saint-Sébastien et Pasaia", "Bilbao et Vitoria-Gasteiz", "Irun et Hondarribia (Fontarrabie)", "Pampelune et Elizondo"],
+                correctIndex: 2,
+                cultureG: "Ces trois villes forment le 'Consorcio Bidasoa-Txingudi'. Elles partagent la même baie et la Bidassoa, et collaborent au quotidien sur le tourisme ou la mobilité."
+            },
+            {
+                question: "Quelle est la particularité du tissu économique du Pays Basque en ce qui concerne la diversité des activités ?",
+                options: ["Dépendant de l'Espagne", "Ultra-spécialisé dans l'aéronautique", "Aucune activité industrielle", "Bonne diversité sans ultra-spécialisation"],
+                correctIndex: 3,
+                cultureG: "Contrairement à d'autres régions (monoculture industrielle), le Pays Basque s'appuie sur une mosaïque de filières (agroalimentaire, aéronautique, glisse...). Cela rend son économie plus résistante !"
+            },
+            {
+                question: "Dans l'agroalimentaire, quel produit emblématique doit être transformé dans une zone qui INCLUT le Pays Basque pour obtenir son IGP ?",
+                options: ["Le Jambon de Bayonne", "Le gâteau basque", "Le fromage Ossau-Iraty", "Le piment d'Espelette"],
+                correctIndex: 0,
+                cultureG: "Pour avoir l'IGP 'Jambon de Bayonne', les porcs peuvent venir d'une large zone du Sud-Ouest, mais le salage et l'affinage DOIVENT obligatoirement se faire dans le bassin de l'Adour !"
+            },
+            {
+                question: "De quoi est majoritairement composé le littoral basque (environ 40 km) ?",
+                options: ["De plages de sable fin", "De dunes et marais", "De zones industrielles", "De falaises rocheuses"],
+                correctIndex: 3,
+                cultureG: "Contrairement à la côte landaise très plate, la côte basque est très découpée (côte à falaises). Ce paysage pose aujourd'hui de grands défis d'aménagement face à l'érosion marine."
+            },
+            {
+                question: "Selon les documents de l'Agglomération, quel est le deuxième pôle économique de la région Nouvelle-Aquitaine ?",
+                options: ["Pau", "Le Pays Basque", "Limoges", "La Rochelle"],
+                correctIndex: 1,
+                cultureG: "Juste derrière la métropole de Bordeaux, le Pays Basque s'impose comme le 2ème bassin d'emploi et pôle économique de la plus vaste région de France."
+            },
+            {
+                question: "Quelle est l'une des caractéristiques de la Soule, la plus petite province basque ?",
+                options: ["Majorité de la population", "Industrie historique (espadrille)", "Plus d'emplois agricoles qu'industriels", "Aucune frontière avec l'Espagne"],
+                correctIndex: 1,
+                cultureG: "Malgré sa petite taille et son aspect rural, cette province est fortement industrialisée : elle compte même davantage d'emplois dans l'industrie que dans l'agriculture."
+            },
+            {
+                question: "Quelle est la principale caractéristique de la politique de cohésion sociale de la CAPB ?",
+                options: ["Globale (Pays Basque) et locale (communes)", "Seulement du logement social", "Gérée à 100% depuis Bayonne", "Pour les moins de 25 ans uniquement"],
+                correctIndex: 0,
+                cultureG: "Pour être efficace, l'Agglomération définit de grandes orientations mais s'appuie sur les mairies et les acteurs locaux pour appliquer ces aides au plus près des habitants."
+            },
+            {
+                question: "Quel pourcentage des agents de la CAPB travaille en service déconcentré (au plus proche du terrain) ?",
+                options: ["50 %", "10 %", "70 %", "30 %"],
+                correctIndex: 2,
+                cultureG: "Pour éviter d'être une institution lointaine, 70 % des agents sont répartis dans des 'pôles territoriaux' partout sur le territoire, pour garantir un service public de proximité."
+            },
+            {
+                question: "Quelle grande ville espagnole est plus proche de Bayonne que ne l'est Bordeaux ?",
+                options: ["Barcelone", "Séville", "Madrid", "Bilbao"],
+                correctIndex: 3,
+                cultureG: "Bayonne n'est située qu'à environ 150 km de Bilbao, contre près de 190 km pour Bordeaux ! Cette proximité en fait un carrefour d'échanges incontournable."
+            }
         ];
 
-        // Styles des options
-        const optionStyles = [
-            { bg: "bg-red-600 hover:bg-red-700", border: "border-red-700", icon: `<svg class="text-white fill-white w-8 h-8" viewBox="0 0 24 24"><path d="M12 2L22 20H2L12 2Z"/></svg>` },
-            { bg: "bg-blue-600 hover:bg-blue-700", border: "border-blue-700", icon: `<svg class="text-white fill-white w-8 h-8" viewBox="0 0 24 24"><path d="M12 2L22 12L12 22L2 12L12 2Z"/></svg>` },
-            { bg: "bg-yellow-500 hover:bg-yellow-600", border: "border-yellow-600", icon: `<svg class="text-white fill-white w-8 h-8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>` },
-            { bg: "bg-green-600 hover:bg-green-700", border: "border-green-700", icon: `<svg class="text-white fill-white w-8 h-8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18"/></svg>` }
-        ];
+        // État de l'application
+        let currentIndex = 0;
+        let showAnswer = false;
 
-        // Icônes Feedback
-        const checkIcon = `<svg class="w-24 h-24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
-        const xIcon = `<svg class="w-24 h-24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+        // Éléments du DOM
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const culturePanel = document.getElementById('culture-g-panel');
+        const waitingPanel = document.getElementById('waiting-panel');
+        const cultureText = document.getElementById('culture-text');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnToggleAnswer = document.getElementById('btn-toggle-answer');
 
-        // GLOBAL STATE
-        let mode = null; // 'solo', 'host', 'player'
-        let currentQuestionIndex = 0;
-        let score = 0; // for solo
+        // Initialisation des icônes Lucide
+        lucide.createIcons();
 
-        // FIREBASE STATE
-        let app, auth, db, appId, myUserId;
-        let firebaseReady = false;
-        let gamePin = null;
-        let currentGameDoc = null;
-        let roomPlayers = [];
-        let unsubGame = null;
-        let unsubPlayers = null;
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            quizScreen.classList.add('flex');
+            renderQuestion();
+        }
 
-        // INIT FIREBASE
-        async function initFirebase() {
-            try {
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-                if (!firebaseConfig) { document.getElementById('firebase-status').innerText = "Mode Multi non disponible (Config manquante)"; return; }
-                
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        function renderQuestion() {
+            const question = quizData[currentIndex];
+            
+            // Mise à jour des textes
+            progressText.textContent = `Question ${currentIndex + 1} / ${quizData.length}`;
+            questionText.textContent = question.question;
+            cultureText.textContent = question.cultureG;
 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+            // Mise à jour des boutons de navigation
+            btnPrev.disabled = currentIndex === 0;
+            btnNext.disabled = currentIndex === quizData.length - 1;
+
+            // Panneaux et bouton toggle
+            updatePanelsAndToggleBtn();
+
+            // Génération des options
+            optionsGrid.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const isCorrect = showAnswer && index === question.correctIndex;
+                const isWrongOption = showAnswer && index !== question.correctIndex;
+
+                let wrapperClasses = "p-6 rounded-2xl text-xl font-medium border-2 flex items-center justify-between transition-all duration-300 ";
+                let letterClasses = "flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold shrink-0 ";
+
+                if (!showAnswer) {
+                    wrapperClasses += "border-slate-200 bg-slate-50 hover:border-indigo-300";
+                    letterClasses += "bg-slate-200 text-slate-600";
+                } else if (isCorrect) {
+                    wrapperClasses += "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-md";
+                    letterClasses += "bg-emerald-500 text-white";
+                } else if (isWrongOption) {
+                    wrapperClasses += "border-slate-100 bg-white text-slate-400 opacity-60";
+                    letterClasses += "bg-slate-100 text-slate-400";
                 }
 
-                onAuthStateChanged(auth, user => {
-                    if (user) {
-                        myUserId = user.uid;
-                        firebaseReady = true;
-                        document.getElementById('firebase-status').innerText = "Serveur en ligne ! Mode Multi disponible.";
-                        document.getElementById('firebase-status').className = "mt-4 text-sm text-green-300 font-bold";
-                    }
-                });
-            } catch (e) {
-                console.error(e);
-                document.getElementById('firebase-status').innerText = "Erreur connexion Multi";
-            }
-        }
-        initFirebase();
+                const letter = String.fromCharCode(65 + index);
+                const checkIcon = isCorrect ? `<i data-lucide="check-circle-2" class="text-emerald-500 w-7 h-7"></i>` : '';
 
-        // UTIL: Naviguer entre les écrans
-        window.showScreen = function(screenId) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            window.scrollTo(0, 0);
-        }
-        
-        window.resetApp = function() {
-            if (unsubGame) unsubGame();
-            if (unsubPlayers) unsubPlayers();
-            mode = null;
-            showScreen('start-screen');
-        }
-
-        // ================= MODE SOLO =================
-        window.startSolo = function() {
-            mode = 'solo';
-            currentQuestionIndex = 0;
-            score = 0;
-            renderSoloQuestion();
-            showScreen('playing-screen');
-        }
-
-        function renderSoloQuestion() {
-            const q = quizData[currentQuestionIndex];
-            document.getElementById('question-counter').innerText = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
-            document.getElementById('top-right-indicator').innerHTML = `Score: ${score}`;
-            document.getElementById('question-text').innerText = q.question;
-            document.getElementById('host-controls').classList.add('hidden');
-
-            const optionsGrid = document.getElementById('options-grid');
-            optionsGrid.innerHTML = '';
-            optionsGrid.className = q.options.length === 2 ? "grid grid-cols-1 md:grid-cols-2 max-w-4xl gap-4 w-full" : "grid grid-cols-1 md:grid-cols-2 max-w-6xl gap-4 w-full";
-
-            q.options.forEach((option, index) => {
-                const style = optionStyles[index % optionStyles.length];
-                const safeOption = option.replace(/'/g, "\\'");
                 optionsGrid.innerHTML += `
-                    <button onclick="handleSoloAnswer('${safeOption}')" class="relative flex items-center p-6 md:p-8 rounded-2xl shadow-md border-b-8 active:border-b-0 active:translate-y-2 transition-all ${style.bg} ${style.border} overflow-hidden group text-left">
-                        <div class="mr-6 shrink-0 transition-transform group-hover:scale-110">${style.icon}</div>
-                        <span class="text-2xl md:text-4xl font-bold text-white w-full drop-shadow-md">${option}</span>
-                    </button>`;
+                    <div class="${wrapperClasses}">
+                        <div class="flex items-center gap-4">
+                            <span class="${letterClasses}">${letter}</span>
+                            <span>${option}</span>
+                        </div>
+                        ${checkIcon}
+                    </div>
+                `;
             });
+
+            // Recharger les nouvelles icônes injectées
+            lucide.createIcons();
         }
 
-        window.handleSoloAnswer = function(selected) {
-            const q = quizData[currentQuestionIndex];
-            const isCorrect = selected === q.answer;
-            if (isCorrect) score++;
-
-            // Configurer écran Explication
-            const explScreen = document.getElementById('explanation-screen');
-            explScreen.classList.remove('bg-green-500', 'bg-red-500');
-            explScreen.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500');
-            
-            document.getElementById('feedback-icon').innerHTML = isCorrect ? checkIcon : xIcon;
-            document.getElementById('feedback-title').innerText = isCorrect ? "Bonne Réponse !" : "Mauvaise Réponse...";
-            
-            const correctCont = document.getElementById('correct-answer-container');
-            if (!isCorrect) {
-                correctCont.classList.remove('hidden');
-                document.getElementById('correct-answer-text').innerText = q.answer;
+        function updatePanelsAndToggleBtn() {
+            if (showAnswer) {
+                waitingPanel.classList.add('hidden');
+                culturePanel.classList.remove('hidden');
+                btnToggleAnswer.textContent = 'Masquer la réponse';
+                btnToggleAnswer.className = 'px-8 py-4 rounded-xl font-bold text-lg shadow-md transition-all bg-slate-200 text-slate-700 hover:bg-slate-300';
             } else {
-                correctCont.classList.add('hidden');
-            }
-
-            document.getElementById('explanation-text').innerText = q.explanation;
-            document.getElementById('next-button-text').innerText = (currentQuestionIndex < quizData.length - 1) ? "Question Suivante" : "Terminer le Quiz";
-            
-            showScreen('explanation-screen');
-        }
-
-        window.handleNextAction = function() {
-            if (mode === 'solo') {
-                if (currentQuestionIndex < quizData.length - 1) {
-                    currentQuestionIndex++;
-                    renderSoloQuestion();
-                    showScreen('playing-screen');
-                } else {
-                    document.getElementById('final-score-display').innerText = `${score} / ${quizData.length}`;
-                    document.getElementById('end-message').innerText = score >= quizData.length/2 ? "Bien joué ! Vous connaissez bien votre territoire !" : "Il y a encore des choses à découvrir !";
-                    showScreen('end-screen');
-                }
-            } else if (mode === 'host') {
-                // Host click on "Classement" or "Terminer"
-                if (currentQuestionIndex < quizData.length - 1) {
-                    updateGameState('leaderboard');
-                } else {
-                    updateGameState('end');
-                }
+                waitingPanel.classList.remove('hidden');
+                culturePanel.classList.add('hidden');
+                btnToggleAnswer.textContent = 'Afficher la réponse';
+                btnToggleAnswer.className = 'px-8 py-4 rounded-xl font-bold text-lg shadow-md transition-all bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-1';
             }
         }
 
-
-        // ================= MODE HÔTE (MULTI) =================
-        window.showHostSetup = async function() {
-            if (!firebaseReady) return alert("Veuillez patienter, connexion en cours...");
-            mode = 'host';
-            gamePin = Math.floor(1000 + Math.random() * 9000).toString();
-            document.getElementById('display-pin').innerText = gamePin;
-            
-            // Create game doc
-            const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gamePin);
-            await setDoc(gameRef, { hostId: myUserId, state: 'lobby', questionIndex: 0, timestamp: Date.now() });
-            
-            listenToGame();
-            listenToPlayers();
-            showScreen('host-lobby-screen');
+        function toggleAnswer() {
+            showAnswer = !showAnswer;
+            renderQuestion();
         }
 
-        window.hostStartGame = function() { updateGameState('question', 0); }
-        window.hostShowAnswer = function() { updateGameState('answer'); }
-        window.hostNextQuestion = function() { updateGameState('question', currentQuestionIndex + 1); }
-
-        async function updateGameState(newState, newIndex) {
-            const updates = { state: newState };
-            if (newIndex !== undefined) updates.questionIndex = newIndex;
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gamePin), updates);
+        function handleNext() {
+            if (currentIndex < quizData.length - 1) {
+                currentIndex++;
+                showAnswer = false;
+                renderQuestion();
+            }
         }
 
-        function renderHostQuestion() {
-            const q = quizData[currentQuestionIndex];
-            document.getElementById('question-counter').innerText = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
-            document.getElementById('top-right-indicator').innerHTML = `PIN: ${gamePin}`;
-            document.getElementById('question-text').innerText = q.question;
-            
-            // Hide options on host screen to force looking at colors? No, show them so everyone can read.
-            const optionsGrid = document.getElementById('options-grid');
-            optionsGrid.innerHTML = '';
-            optionsGrid.className = q.options.length === 2 ? "grid grid-cols-1 md:grid-cols-2 max-w-4xl gap-4 w-full" : "grid grid-cols-1 md:grid-cols-2 max-w-6xl gap-4 w-full";
-            
-            q.options.forEach((option, index) => {
-                const style = optionStyles[index % optionStyles.length];
-                optionsGrid.innerHTML += `
-                    <div class="relative flex items-center p-6 md:p-8 rounded-2xl shadow-md ${style.bg} ${style.border} text-left opacity-90">
-                        <div class="mr-6 shrink-0">${style.icon}</div>
-                        <span class="text-2xl md:text-4xl font-bold text-white w-full drop-shadow-md">${option}</span>
-                    </div>`;
-            });
-
-            document.getElementById('host-controls').classList.remove('hidden');
-            updateAnswersCount();
-        }
-
-        function renderHostAnswer() {
-            const q = quizData[currentQuestionIndex];
-            const explScreen = document.getElementById('explanation-screen');
-            explScreen.classList.remove('bg-green-500', 'bg-red-500');
-            explScreen.classList.add('bg-purple-600');
-            
-            document.getElementById('feedback-icon').innerHTML = '';
-            document.getElementById('feedback-title').innerText = "La Réponse !";
-            
-            document.getElementById('correct-answer-container').classList.remove('hidden');
-            document.getElementById('correct-answer-text').innerText = q.answer;
-            document.getElementById('explanation-text').innerText = q.explanation;
-            document.getElementById('next-button-text').innerText = "Voir le classement";
-            
-            showScreen('explanation-screen');
-        }
-
-        function renderHostLeaderboard() {
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = '';
-            // Sort players by score desc
-            const sorted = [...roomPlayers].sort((a,b) => b.score - a.score);
-            sorted.slice(0, 5).forEach((p, i) => {
-                const isTop = i === 0;
-                list.innerHTML += `
-                    <div class="flex justify-between items-center p-4 bg-gray-100 rounded-xl ${isTop ? 'border-4 border-yellow-400' : ''}">
-                        <div class="text-2xl font-bold text-gray-800 flex items-center gap-4">
-                            <span class="text-gray-400">#${i+1}</span> ${p.name}
-                        </div>
-                        <div class="text-2xl font-extrabold text-blue-600">${p.score} pts</div>
-                    </div>`;
-            });
-            showScreen('leaderboard-screen');
-        }
-
-
-        // ================= MODE JOUEUR (MULTI) =================
-        window.showJoinSetup = function() {
-            if (!firebaseReady) return alert("Veuillez patienter, connexion en cours...");
-            showScreen('join-screen');
-        }
-
-        window.joinGame = async function() {
-            const pin = document.getElementById('join-pin').value.trim().toUpperCase();
-            const pseudo = document.getElementById('join-pseudo').value.trim();
-            if (!pin || !pseudo) return alert("Remplissez tous les champs");
-            
-            try {
-                // Verify game exists
-                const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', pin);
-                const gSnap = await getDoc(gRef);
-                if (!gSnap.exists()) return alert("Partie introuvable avec ce PIN");
-
-                mode = 'player';
-                gamePin = pin;
-                
-                // Register Player
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', myUserId), {
-                    gamePin: pin,
-                    name: pseudo,
-                    score: 0,
-                    lastAnsweredIndex: -1,
-                    lastAnswerCorrect: false
-                });
-
-                listenToGame();
-                listenToPlayers();
-                showScreen('player-lobby-screen');
-            } catch(e) { console.error(e); alert("Erreur lors de la connexion"); }
-        }
-
-        function renderPlayerQuestion() {
-            const q = quizData[currentQuestionIndex];
-            const grid = document.getElementById('player-options-grid');
-            grid.innerHTML = '';
-            
-            q.options.forEach((option, index) => {
-                const style = optionStyles[index % optionStyles.length];
-                const safeOption = option.replace(/'/g, "\\'");
-                grid.innerHTML += `
-                    <button onclick="submitMultiAnswer('${safeOption}')" class="w-full h-full min-h-[150px] flex items-center justify-center rounded-2xl shadow-lg border-b-8 active:border-b-0 active:translate-y-2 transition-all ${style.bg} ${style.border}">
-                        <div class="flex flex-col items-center p-4">
-                            ${style.icon}
-                            <span class="mt-4 text-xl md:text-2xl font-bold text-white text-center break-words">${option}</span>
-                        </div>
-                    </button>`;
-            });
-        }
-
-        window.submitMultiAnswer = async function(selected) {
-            if (mode !== 'player' || currentGameDoc.state !== 'question') return;
-            showScreen('player-waiting-screen'); // Immediate feedback
-            
-            const q = quizData[currentQuestionIndex];
-            const isCorrect = selected === q.answer;
-            const myPlayer = roomPlayers.find(p => p.id === myUserId);
-            const newScore = (myPlayer?.score || 0) + (isCorrect ? 1 : 0);
-
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', myUserId), {
-                lastAnsweredIndex: currentQuestionIndex,
-                lastAnswerCorrect: isCorrect,
-                score: newScore
-            });
-        }
-
-        function renderPlayerAnswer() {
-            const myPlayer = roomPlayers.find(p => p.id === myUserId);
-            const isCorrect = myPlayer && myPlayer.lastAnswerCorrect;
-            const scn = document.getElementById('player-result-screen');
-            
-            scn.classList.remove('bg-green-500', 'bg-red-500');
-            scn.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500');
-            
-            document.getElementById('player-result-icon').innerHTML = isCorrect ? checkIcon : xIcon;
-            document.getElementById('player-result-title').innerText = isCorrect ? "VRAI !" : "FAUX !";
-            document.getElementById('player-result-score').innerText = isCorrect ? "+1 Point" : "+0 Point";
-        }
-
-        function renderPlayerLeaderboard() {
-            const sorted = [...roomPlayers].sort((a,b) => b.score - a.score);
-            const myIndex = sorted.findIndex(p => p.id === myUserId);
-            const myPlayer = sorted[myIndex];
-            
-            document.getElementById('player-rank').innerText = `#${myIndex + 1}`;
-            document.getElementById('player-lb-score').innerText = myPlayer ? myPlayer.score : 0;
-        }
-
-
-        // ================= SYNCHRONISATION (LISTENERS) =================
-        function listenToGame() {
-            const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gamePin);
-            unsubGame = onSnapshot(gRef, snap => {
-                if (snap.exists()) {
-                    currentGameDoc = snap.data();
-                    currentQuestionIndex = currentGameDoc.questionIndex;
-                    syncUIState();
-                }
-            });
-        }
-
-        function listenToPlayers() {
-            const pRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-            unsubPlayers = onSnapshot(pRef, snap => {
-                const allPlayers = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                roomPlayers = allPlayers.filter(p => p.gamePin === gamePin); // Rule 2 filter
-                
-                if (mode === 'host' && currentGameDoc?.state === 'lobby') {
-                    document.getElementById('player-count').innerText = roomPlayers.length;
-                    const list = document.getElementById('player-list');
-                    list.innerHTML = roomPlayers.length === 0 ? '<p class="text-gray-400 italic">En attente des joueurs...</p>' : '';
-                    roomPlayers.forEach(p => {
-                        list.innerHTML += `<span class="bg-gray-200 text-gray-800 font-bold px-4 py-2 rounded-lg">${p.name}</span>`;
-                    });
-                }
-                
-                if (mode === 'host' && currentGameDoc?.state === 'question') {
-                    updateAnswersCount();
-                }
-            });
-        }
-
-        function updateAnswersCount() {
-            const count = roomPlayers.filter(p => p.lastAnsweredIndex === currentQuestionIndex).length;
-            document.getElementById('answers-received').innerText = count;
-        }
-
-        function syncUIState() {
-            const state = currentGameDoc.state;
-            if (mode === 'host') {
-                if (state === 'lobby') showScreen('host-lobby-screen');
-                if (state === 'question') renderHostQuestion(), showScreen('playing-screen');
-                if (state === 'answer') renderHostAnswer(); // shows explanation
-                if (state === 'leaderboard') renderHostLeaderboard();
-                if (state === 'end') {
-                    document.getElementById('final-score-display').innerText = "";
-                    document.getElementById('end-message').innerText = "Merci d'avoir joué !";
-                    showScreen('end-screen');
-                }
-            } else if (mode === 'player') {
-                if (state === 'lobby') showScreen('player-lobby-screen');
-                if (state === 'question') {
-                    const me = roomPlayers.find(p => p.id === myUserId);
-                    if (me && me.lastAnsweredIndex === currentQuestionIndex) {
-                        showScreen('player-waiting-screen');
-                    } else {
-                        renderPlayerQuestion(); showScreen('player-question-screen');
-                    }
-                }
-                if (state === 'answer') { renderPlayerAnswer(); showScreen('player-result-screen'); }
-                if (state === 'leaderboard') { renderPlayerLeaderboard(); showScreen('player-leaderboard-screen'); }
-                if (state === 'end') {
-                    const me = roomPlayers.find(p => p.id === myUserId);
-                    document.getElementById('final-score-display').innerText = `${me?.score || 0} pts`;
-                    document.getElementById('end-message').innerText = "Fin de la partie ! Regardez le podium sur l'écran principal.";
-                    showScreen('end-screen');
-                }
+        function handlePrev() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                showAnswer = false;
+                renderQuestion();
             }
         }
     </script>
