@@ -3,346 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouve ta place sur le territoire - Quiz</title>
+    <title>Parcours les Territoires: Le Quizz</title>
     <!-- Chargement de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chargement des icônes Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Police géométrique moderne -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        creme: '#F5F0E1',
+                        canard: '#0A7A82',
+                        jaune: '#FFD166',
+                        saumon: '#EF476F'
+                    },
+                    boxShadow: {
+                        'solide-sm': '2px 2px 0px 0px rgba(0,0,0,1)',
+                        'solide': '4px 4px 0px 0px rgba(0,0,0,1)',
+                        'solide-lg': '8px 8px 0px 0px rgba(0,0,0,1)',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         /* Animations personnalisées */
         @keyframes fadeInSlideUp {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in-up {
-            animation: fadeInSlideUp 0.5s ease-out forwards;
+            animation: fadeInSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        body {
+            background-color: #F5F0E1; /* Fond beige crème */
+            background-image: radial-gradient(#d1ccc0 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="font-sans text-slate-900 antialiased min-h-screen flex flex-col">
 
     <!-- ÉCRAN D'ACCUEIL -->
-    <div id="start-screen" class="flex-1 flex items-center justify-center p-4">
-        <div class="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center border-t-8 border-indigo-600">
-            <h1 class="text-4xl font-bold text-slate-900 mb-4">Trouve ta place sur le territoire</h1>
-            <h2 class="text-2xl text-indigo-600 font-medium mb-8">Quiz Interactif : Connais-tu ton territoire ?</h2>
-            <p class="text-lg text-slate-600 mb-8 leading-relaxed">
-                Un atelier interactif pour découvrir les ressources, l'économie et les spécificités du Pays Basque Nord. 
-                Préparez vos smartphones pour voter !
-            </p>
-            <button onclick="startQuiz()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-full text-xl transition-all shadow-lg hover:shadow-indigo-200">
-                <i data-lucide="play-circle" class="w-7 h-7"></i>
-                Démarrer le Quiz
-            </button>
+    <div id="start-screen" class="flex-1 flex items-center justify-center p-4 md:p-8">
+        <div class="max-w-3xl w-full bg-white border-2 border-black rounded-3xl shadow-solide-lg overflow-hidden flex flex-col">
+            
+            <!-- Bannière Bleu Canard -->
+            <div class="bg-canard p-8 md:p-12 text-center border-b-2 border-black relative">
+                <button onclick="openQR()" class="absolute top-4 right-4 bg-jaune border-2 border-black p-3 rounded-full shadow-solide hover:-translate-y-1 hover:shadow-solide-lg transition-all" title="QR Code Vote">
+                    <i data-lucide="smartphone" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-5xl md:text-7xl font-extrabold uppercase tracking-tight leading-none mb-4">
+                    <span class="text-white block md:inline">Parcours les</span> 
+                    <span class="text-jaune block md:inline">Territoires</span>
+                </h1>
+                <h2 class="text-white text-xl md:text-2xl font-bold bg-black inline-block px-4 py-1 -rotate-1 mt-2">
+                    Le Quizz
+                </h2>
+            </div>
+
+            <!-- Contenu Infographique -->
+            <div class="p-8 md:p-12 text-center flex flex-col items-center gap-8 bg-creme">
+                
+                <button onclick="startQuiz()" class="mt-4 inline-flex items-center gap-3 bg-jaune hover:bg-[#ffdf8c] text-black border-2 border-black font-black uppercase tracking-wide py-4 px-10 rounded-full text-xl md:text-2xl transition-all shadow-solide hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none">
+                    <i data-lucide="play" class="w-6 h-6 fill-current"></i>
+                    Démarrer
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- ÉCRAN DU QUIZ (Caché au démarrage) -->
-    <div id="quiz-screen" class="hidden flex-1 flex flex-col">
-        <!-- En-tête -->
-        <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center border-b border-slate-200">
-            <div class="font-bold text-xl text-indigo-700 flex items-center gap-2">
-                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm">Mission Locale</span>
-                Quiz Territoire
+    <div id="quiz-screen" class="hidden flex-1 flex-col">
+        <!-- Bannière Supérieure -->
+        <header class="bg-canard border-b-2 border-black px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10 sticky top-0 shadow-solide">
+            <div class="font-extrabold text-2xl tracking-tight uppercase text-center md:text-left flex items-center gap-4">
+                <div><span class="text-white">Parcours les</span> <span class="text-jaune">Territoires</span></div>
             </div>
-            <div id="progress-text" class="text-slate-500 font-medium bg-slate-100 px-4 py-1.5 rounded-full">
-                Question 1 / 35
+            <div class="flex items-center gap-3">
+                <div id="timer-display" class="bg-white border-2 border-black font-black text-sm md:text-base px-3 md:px-4 py-1.5 rounded-full shadow-solide-sm flex items-center gap-2 transition-colors">
+                    <i data-lucide="timer" class="w-4 h-4 md:w-5 md:h-5"></i>
+                    <span id="timer-text">15s</span>
+                </div>
+                <button onclick="openQR()" class="bg-white hover:bg-slate-100 border-2 border-black font-bold text-sm uppercase px-4 py-1.5 rounded-full shadow-solide-sm flex items-center gap-2 transition-all active:translate-y-1 active:shadow-none">
+                    <i data-lucide="smartphone" class="w-4 h-4"></i> Mode Vote
+                </button>
+                <div id="progress-text" class="bg-jaune border-2 border-black font-bold text-sm px-4 py-1.5 rounded-full shadow-solide-sm">
+                    1 / 35
+                </div>
             </div>
         </header>
 
-        <!-- Contenu Principal -->
-        <main class="flex-1 flex flex-col items-center p-6 max-w-5xl mx-auto w-full">
+        <main class="flex-1 flex flex-col items-center p-4 md:p-8 max-w-5xl mx-auto w-full">
             
             <!-- Carte Question -->
-            <div class="w-full bg-white rounded-3xl shadow-lg p-8 md:p-12 mb-6 text-center border-t-4 border-indigo-500 transition-all">
-                <h2 id="question-text" class="text-3xl md:text-4xl font-bold text-slate-800 leading-tight mb-8">
+            <div class="w-full bg-white border-2 border-black rounded-3xl shadow-solide p-6 md:p-10 mb-8 transition-all relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-3 bg-saumon border-b-2 border-black"></div>
+                
+                <h2 id="question-text" class="text-2xl md:text-4xl font-extrabold leading-tight mb-8 mt-4">
                     <!-- La question sera injectée ici -->
                 </h2>
 
-                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-left">
                     <!-- Les options seront injectées ici -->
                 </div>
             </div>
 
-            <!-- Panneau d'attente (QR Code) -->
-            <div id="waiting-panel" class="w-full flex justify-center items-center py-8 opacity-60">
-                <div class="flex flex-col items-center text-slate-500 gap-2 animate-pulse">
-                    <i data-lucide="qr-code" class="w-12 h-12"></i>
-                    <p class="font-medium text-lg">C'est le moment de voter !</p>
-                </div>
-            </div>
-
             <!-- Panneau Culture G (Caché par défaut) -->
-            <div id="culture-g-panel" class="hidden w-full bg-amber-50 border border-amber-200 rounded-2xl p-6 md:p-8 shadow-sm animate-fade-in-up">
-                <div class="flex gap-4 items-start">
-                    <div class="bg-amber-100 p-3 rounded-full shrink-0">
-                        <i data-lucide="info" class="text-amber-600 w-7 h-7"></i>
+            <div id="culture-g-panel" class="hidden w-full bg-jaune border-2 border-black rounded-2xl p-6 md:p-8 shadow-solide animate-fade-in-up">
+                <div class="flex flex-col md:flex-row gap-4 items-start">
+                    <div class="bg-white border-2 border-black p-3 rounded-full shrink-0 shadow-solide-sm transform -rotate-6">
+                        <i data-lucide="lightbulb" class="text-black w-8 h-8 fill-jaune"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-amber-800 mb-2">Le saviez-vous ?</h3>
-                        <p id="culture-text" class="text-lg text-amber-900 leading-relaxed">
+                        <h3 class="text-2xl font-black uppercase mb-2">Le saviez-vous ?</h3>
+                        <p id="culture-text" class="text-lg md:text-xl font-medium leading-relaxed">
                             <!-- L'anecdote sera injectée ici -->
                         </p>
                     </div>
                 </div>
             </div>
+            
+            <!-- Espace en bas pour scroller si besoin -->
+            <div class="h-24"></div>
         </main>
 
         <!-- Contrôles du Footer -->
-        <footer class="bg-white border-t border-slate-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <div class="max-w-5xl mx-auto flex justify-between items-center w-full">
-                <button id="btn-prev" onclick="handlePrev()" class="flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors">
-                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    Précédent
+        <footer class="bg-white border-t-2 border-black p-4 shrink-0 fixed bottom-0 w-full z-20">
+            <div class="max-w-5xl mx-auto flex justify-between items-center w-full gap-2 md:gap-4">
+                <button id="btn-prev" onclick="handlePrev()" class="flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-creme border-2 border-black rounded-full font-bold shadow-solide hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none disabled:opacity-50 disabled:pointer-events-none transition-all">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    <span class="hidden md:inline">Précédent</span>
                 </button>
 
-                <button id="btn-toggle-answer" onclick="toggleAnswer()" class="px-8 py-4 rounded-xl font-bold text-lg shadow-md transition-all bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-1">
+                <button id="btn-toggle-answer" onclick="toggleAnswer()" class="flex-1 md:flex-none px-6 md:px-10 py-4 rounded-full font-black uppercase tracking-wide text-lg shadow-solide hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none transition-all bg-black text-white border-2 border-black">
                     Afficher la réponse
                 </button>
 
-                <button id="btn-next" onclick="handleNext()" class="flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors">
-                    Suivant
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                <button id="btn-next" onclick="handleNext()" class="flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-creme border-2 border-black rounded-full font-bold shadow-solide hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none disabled:opacity-50 disabled:pointer-events-none transition-all">
+                    <span class="hidden md:inline">Suivant</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </button>
             </div>
         </footer>
     </div>
 
-    <!-- Script de l'application -->
+    <!-- MODAL QR CODE -->
+    <div id="qr-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-creme border-4 border-black rounded-3xl p-8 max-w-sm w-full shadow-solide-lg text-center flex flex-col items-center relative animate-fade-in-up">
+            <button onclick="closeQR()" class="absolute -top-4 -right-4 bg-white border-4 border-black w-12 h-12 flex items-center justify-center rounded-full shadow-solide hover:bg-slate-100 font-black text-xl z-10">X</button>
+            
+            <h3 class="text-3xl font-black uppercase mb-4 leading-tight">Vote sur<br><span class="text-saumon">Smartphone</span></h3>
+            <p class="font-bold text-slate-700 mb-6">Flashez ce code pour transformer votre téléphone en pancarte de vote !</p>
+            
+            <div class="bg-white p-4 border-4 border-black rounded-2xl shadow-solide mb-6">
+                <img id="qr-image" src="" alt="QR Code" class="w-48 h-48 mx-auto" />
+            </div>
+            
+            <p class="text-sm font-bold opacity-70 mb-2">Ou allez sur l'URL :</p>
+            <div class="bg-white border-2 border-black px-4 py-3 rounded-xl text-sm font-bold break-all shadow-solide-sm w-full">
+                <span id="qr-url-text" class="select-all"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÉCRAN SMARTPHONE (Caché par défaut, activé via URL) -->
+    <div id="vote-screen" class="hidden min-h-screen flex-col bg-creme font-sans">
+        <!-- Écran 1: Choix -->
+        <div id="vote-choices" class="flex-1 flex flex-col p-6 max-w-md mx-auto w-full">
+            <h1 class="text-3xl font-black text-center mb-2 uppercase tracking-tight mt-4">Ton Vote</h1>
+            <p class="text-center font-bold text-slate-600 mb-8">Touche la réponse de ton choix</p>
+            
+            <div class="grid grid-cols-1 gap-4 flex-1 pb-8">
+                <button onclick="castVote('A')" class="flex-1 text-5xl font-black bg-jaune border-4 border-black rounded-3xl shadow-[4px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center">A</button>
+                <button onclick="castVote('B')" class="flex-1 text-5xl font-black bg-saumon text-white border-4 border-black rounded-3xl shadow-[4px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center">B</button>
+                <button onclick="castVote('C')" class="flex-1 text-5xl font-black bg-canard text-white border-4 border-black rounded-3xl shadow-[4px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center">C</button>
+                <button onclick="castVote('D')" class="flex-1 text-5xl font-black bg-white border-4 border-black rounded-3xl shadow-[4px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center">D</button>
+            </div>
+        </div>
+        
+        <!-- Écran 2: Affichage de la couleur (Pancarte) -->
+        <div id="vote-display" class="hidden fixed inset-0 flex-col items-center justify-center border-[12px] border-black p-6">
+            <span id="vote-letter" class="text-[15rem] font-black leading-none drop-shadow-lg uppercase"></span>
+            <span class="text-2xl font-black mt-8 bg-black text-white px-8 py-3 rounded-full border-4 border-black shadow-solide uppercase tracking-widest text-center">Levez l'écran !</span>
+            <button onclick="resetVote()" class="absolute bottom-10 bg-white text-black border-4 border-black px-8 py-4 rounded-full font-black uppercase shadow-solide active:translate-y-2 active:shadow-none transition-all">
+                Modifier mon choix
+            </button>
+        </div>
+    </div>
+
     <script>
         // Base de données complète des questions
         const quizData = [
-            {
-                question: "Combien de provinces historiques composent le Pays Basque Nord ?",
-                options: ["4", "5", "3", "7"],
-                correctIndex: 2,
-                cultureG: "Le Pays Basque Nord (Iparralde) est composé du Labourd, de la Basse-Navarre et de la Soule. Si l'on ajoute les 4 provinces du Sud (Hegoalde) en Espagne, on arrive au chiffre symbolique de 7 provinces ('Zazpiak Bat')."
-            },
-            {
-                question: "Quelle est la caractéristique principale de 96 % des entreprises installées au Pays Basque ?",
-                options: ["Elles ne travaillent que dans le tourisme", "Elles appartiennent à des grands groupes mondiaux", "Elles emploient moins de 10 salariés", "Elles sont situées uniquement sur le littoral"],
-                correctIndex: 2,
-                cultureG: "Le tissu économique local est essentiellement composé de TPE (Très Petites Entreprises). À l'inverse des idées reçues, ces petites structures représentent un emploi sur deux sur le territoire."
-            },
-            {
-                question: "Vrai ou Faux : Le secteur du tourisme emploie plus de personnes que le secteur de l'industrie au Pays Basque ?",
-                options: ["Faux", "Vrai"],
-                correctIndex: 0,
-                cultureG: "Malgré la forte notoriété touristique de la région, l'industrie emploie davantage de personnes que le tourisme. L'économie basque possède une forte culture de production et de fabrication."
-            },
-            {
-                question: "Quelle entreprise est le plus gros employeur privé du Pays Basque (environ 900 salariés) ?",
-                options: ["L'Hôpital de Bayonne", "Carrefour", "Quiksilver", "Dassault Aviation"],
-                correctIndex: 3,
-                cultureG: "Située à Anglet, Dassault Aviation est le fer de lance du secteur Aéronautique, mécanique et métallurgie, l'un des 10 secteurs clés identifiés pour le territoire."
-            },
-            {
-                question: "En Soule, quel secteur d'activité compte le plus d'emplois directs ?",
-                options: ["Le commerce", "L'industrie", "Le tourisme", "L'agriculture"],
-                correctIndex: 1,
-                cultureG: "Contrairement aux clichés sur les zones rurales, il y a plus d'emplois industriels que d'emplois agricoles en Soule. C'est un héritage de l'activité minière et de l'exploitation du bois."
-            },
-            {
-                question: "Comment s'appelle la monnaie locale du Pays Basque, aujourd'hui la plus importante d'Europe ?",
-                options: ["L'Euro Basque", "L'Eusko", "Le Makila", "Le Pas-Basque"],
-                correctIndex: 1,
-                cultureG: "L'utilisation d'une monnaie locale comme l'Eusko illustre la volonté des habitants d'être acteurs de leur économie par leurs achats et de soutenir les circuits courts."
-            },
-            {
-                question: "Tu cherches une formation d'ingénieur spécialisée à Bidart. Quel site dois-tu visiter ?",
-                options: ["Le site Izarbel (ESTIA)", "CréaLuz", "La Technocité", "Arkinova"],
-                correctIndex: 0,
-                cultureG: "Le technopôle Izarbel accueille l'école d'ingénieurs ESTIA. C'est le cœur de l'innovation numérique du territoire, favorisant les échanges entre recherche, formation et entreprises."
-            },
-            {
-                question: "Vrai ou Faux : Les fermes au Pays Basque sont en moyenne deux fois plus petites que les fermes françaises ?",
-                options: ["Faux", "Vrai"],
-                correctIndex: 1,
-                cultureG: "L'agriculture basque est marquée par des exploitations de petite taille, souvent familiales. L'attachement à la terre a permis de maintenir une activité agro-pastorale dynamique."
-            },
-            {
-                question: "Quel pourcentage de la population du Pays Basque Nord est aujourd'hui bascophone (parle la langue basque) ?",
-                options: ["5 %", "50 %", "80 %", "20 %"],
-                correctIndex: 3,
-                cultureG: "Si 20 % de la population parle le basque (Euskara), la dynamique est forte chez les jeunes : 1 élève sur 4 est aujourd'hui scolarisé dans un système immersif ou bilingue."
-            },
-            {
-                question: "Dans quel domaine spécifique travaille la technopôle Arkinova située à Anglet ?",
-                options: ["La transformation du fromage de brebis", "La construction durable et l'éco-construction", "La fabrication de planches de surf", "Le développement d'applications mobiles"],
-                correctIndex: 1,
-                cultureG: "Arkinova est dédiée aux métiers de la construction et de l'aménagement durable. C'est un secteur clé qui répond aux défis de l'attractivité du territoire."
-            },
-            {
-                question: "Lequel de ces produits possède une AOP (Appellation d'Origine Protégée) au Pays Basque ?",
-                options: ["Le chocolat de Bayonne", "Le jambon de Bayonne", "Le piment d’Espelette", "Le gâteau basque"],
-                correctIndex: 2,
-                cultureG: "Le piment d'Espelette bénéficie d'une AOP garantissant qu'il est cultivé, transformé et conditionné dans une zone très précise de 10 communes du Pays Basque. (Le Jambon de Bayonne a une IGP)."
-            },
-            {
-                question: "Quelle ville est célèbre pour sa tradition thermale et ses établissements de thalassothérapie historique ?",
-                options: ["Hasparren", "Saint-Palais", "Mauléon", "Cambo-les-Bains"],
-                correctIndex: 3,
-                cultureG: "Cambo-les-Bains est l'unique station thermale du Pays Basque. Elle est réputée depuis des siècles pour les bienfaits de ses eaux, et a notamment accueilli Edmond Rostand."
-            },
-            {
-                question: "Dans quel village peut-on trouver l’atelier Ainciart Bergara qui fabrique des makhilas (bâtons de marche) depuis 7 générations ?",
-                options: ["Sare", "Larressore", "Itxassou", "Espelette"],
-                correctIndex: 1,
-                cultureG: "L'atelier Ainciart Bergara de Larressore fabrique des makhilas, le bâton de marche traditionnel basque. C'est un savoir-faire artisanal d'excellence reconnu dans le monde entier."
-            },
-            {
-                question: "Quel port basque est le premier port de France pour la pêche au thon et au merlu ?",
-                options: ["Saint-Jean-de-Luz / Ciboure", "Bayonne", "Hendaye", "Biarritz"],
-                correctIndex: 0,
-                cultureG: "L'activité de pêche est historique. Si elle se concentre aujourd'hui sur le thon et le merlu, les marins basques partaient autrefois jusqu'à Terre-Neuve pour chasser la baleine."
-            },
-            {
-                question: "Quel est le plus gros employeur public du territoire ?",
-                options: ["Le Centre Hospitalier (CHCB)", "La Communauté d'Agglomération", "L’Éducation Nationale", "La Ville de Bayonne"],
-                correctIndex: 0,
-                cultureG: "Avec environ 3 500 salariés, l'Hôpital de Bayonne est le premier employeur public, devant l'Éducation Nationale et la Communauté d'Agglomération."
-            },
-            {
-                question: "Quelle province est historiquement liée à la fabrication de l’espadrille ?",
-                options: ["Le Guipuscoa", "La Basse-Navarre", "La Soule", "Le Labourd"],
-                correctIndex: 2,
-                cultureG: "Mauléon, en Soule, est la capitale incontestée de l'espadrille. Au début du XXe siècle, cette industrie faisait vivre des milliers d'ouvriers dans la vallée."
-            },
-            {
-                question: "Quelle est la particularité du transport de marchandises au passage transfrontalier chaque jour ?",
-                options: ["Tous les camions s’arrêtent au centre de fret", "10 000 camions circulent quotidiennement", "Le transport est uniquement ferroviaire", "Il n’y a plus de douane donc plus de transit"],
-                correctIndex: 1,
-                cultureG: "Le Pays Basque est un axe de transit européen majeur entre la péninsule ibérique et le reste de l'Europe, ce qui explique ce flux intense (et parfois problématique) de marchandises."
-            },
-            {
-                question: "Quelle entreprise de transport frigorifique a son siège historique à Saint-Jean-de-Luz ?",
-                options: ["Olano", "STEF", "Petit Forestier", "Transports Lahaye"],
-                correctIndex: 0,
-                cultureG: "Le secteur Transport & Logistique est l'un des moteurs de l'économie locale, profitant de la position stratégique du territoire à la frontière espagnole."
-            },
-            {
-                question: "Quand la Communauté d'Agglomération Pays Basque (CAPB) a-t-elle été officiellement créée ?",
-                options: ["Janvier 2006", "Janvier 2000", "Janvier 2017", "Janvier 2020"],
-                correctIndex: 2,
-                cultureG: "La CAPB est née le 1er janvier 2017 de la fusion de 10 anciennes intercommunalités. Cela a permis de doter le Pays Basque Nord d'une institution unique à l'échelle de son territoire."
-            },
-            {
-                question: "Combien de communes regroupe la Communauté d'Agglomération Pays Basque ?",
-                options: ["21", "10", "158", "50"],
-                correctIndex: 2,
-                cultureG: "Avec ses 158 communes, la CAPB est l'une des plus vastes communautés d'agglomération de France. Elle s'étend du littoral très dense jusqu'aux petits villages isolés de la Soule."
-            },
-            {
-                question: "Quel est l'un des trois axes principaux du projet de territoire de la CAPB ?",
-                options: ["Préserver nos ressources", "Développer le tourisme de masse", "Augmenter l'usage de la voiture", "Concentrer des emplois sur le littoral"],
-                correctIndex: 0,
-                cultureG: "Face aux défis climatiques et à la pression foncière, le territoire mise sur la transition écologique, la protection des espaces naturels/agricoles et la gestion de l'eau."
-            },
-            {
-                question: "Comment nomme-t-on la partie du Pays Basque située en France ?",
-                options: ["Hegoalde", "Euskadi", "La Navarre", "Iparralde"],
-                correctIndex: 3,
-                cultureG: "'Iparralde' signifie littéralement 'le côté Nord' en basque. À l'inverse, le Pays Basque situé côté espagnol est appelé 'Hegoalde' (le côté Sud)."
-            },
-            {
-                question: "Quelle est l'application mobile mise en place par la CAPB pour informer sur la qualité des eaux de baignade ?",
-                options: ["Kalilo", "BeachBask", "Océan Météo", "GeoBaignade"],
-                correctIndex: 0,
-                cultureG: "L'application Kalilo ('petit bateau' ou 'flotteur' en basque) permet de connaître en temps réel la couleur du drapeau et la qualité de l'eau des plages de la côte basque."
-            },
-            {
-                question: "Parmi les villes suivantes, laquelle fait partie du programme 'Petites Villes de Demain' ?",
-                options: ["Bayonne", "Ciboure", "Biarritz", "Mauléon-Licharre"],
-                correctIndex: 3,
-                cultureG: "Ce programme national vise à redynamiser les communes de moins de 20 000 habitants. Mauléon en bénéficie pour valoriser son centre-bourg et son commerce de proximité."
-            },
-            {
-                question: "Quelle langue, en plus du français et du basque, est officiellement reconnue comme langue du territoire par la CAPB ?",
-                options: ["L'espagnol", "L'anglais", "L'occitan gascon", "Le catalan"],
-                correctIndex: 2,
-                cultureG: "Le Pays Basque Nord n'est pas uniquement de culture basque ! Le 'Bas-Adour' (Bayonne, Anglet, Boucau...) est historiquement de culture et de langue occitane (variante gasconne)."
-            },
-            {
-                question: "Environ quelle part de la population du Pays Basque vit sur la frange littorale et rétro-littorale ?",
-                options: ["La moitié", "Un quart", "La totalité", "Les trois quarts"],
-                correctIndex: 3,
-                cultureG: "La répartition de la population est très déséquilibrée : environ 75 % des habitants se concentrent sur seulement 15 % du territoire (la côte), ce qui crée de forts enjeux de logement."
-            },
-            {
-                question: "Le bassin de vie transfrontalier de Txingudi réunit Hendaye et deux villes en Espagne. Lesquelles ?",
-                options: ["Saint-Sébastien et Pasaia", "Bilbao et Vitoria-Gasteiz", "Irun et Hondarribia (Fontarrabie)", "Pampelune et Elizondo"],
-                correctIndex: 2,
-                cultureG: "Ces trois villes forment le 'Consorcio Bidasoa-Txingudi'. Elles partagent la même baie et la Bidassoa, et collaborent au quotidien sur le tourisme ou la mobilité."
-            },
-            {
-                question: "Quelle est la particularité du tissu économique du Pays Basque en ce qui concerne la diversité des activités ?",
-                options: ["Dépendant de l'Espagne", "Ultra-spécialisé dans l'aéronautique", "Aucune activité industrielle", "Bonne diversité sans ultra-spécialisation"],
-                correctIndex: 3,
-                cultureG: "Contrairement à d'autres régions (monoculture industrielle), le Pays Basque s'appuie sur une mosaïque de filières (agroalimentaire, aéronautique, glisse...). Cela rend son économie plus résistante !"
-            },
-            {
-                question: "Dans l'agroalimentaire, quel produit emblématique doit être transformé dans une zone qui INCLUT le Pays Basque pour obtenir son IGP ?",
-                options: ["Le Jambon de Bayonne", "Le gâteau basque", "Le fromage Ossau-Iraty", "Le piment d'Espelette"],
-                correctIndex: 0,
-                cultureG: "Pour avoir l'IGP 'Jambon de Bayonne', les porcs peuvent venir d'une large zone du Sud-Ouest, mais le salage et l'affinage DOIVENT obligatoirement se faire dans le bassin de l'Adour !"
-            },
-            {
-                question: "De quoi est majoritairement composé le littoral basque (environ 40 km) ?",
-                options: ["De plages de sable fin", "De dunes et marais", "De zones industrielles", "De falaises rocheuses"],
-                correctIndex: 3,
-                cultureG: "Contrairement à la côte landaise très plate, la côte basque est très découpée (côte à falaises). Ce paysage pose aujourd'hui de grands défis d'aménagement face à l'érosion marine."
-            },
-            {
-                question: "Selon les documents de l'Agglomération, quel est le deuxième pôle économique de la région Nouvelle-Aquitaine ?",
-                options: ["Pau", "Le Pays Basque", "Limoges", "La Rochelle"],
-                correctIndex: 1,
-                cultureG: "Juste derrière la métropole de Bordeaux, le Pays Basque s'impose comme le 2ème bassin d'emploi et pôle économique de la plus vaste région de France."
-            },
-            {
-                question: "Quelle est l'une des caractéristiques de la Soule, la plus petite province basque ?",
-                options: ["Majorité de la population", "Industrie historique (espadrille)", "Plus d'emplois agricoles qu'industriels", "Aucune frontière avec l'Espagne"],
-                correctIndex: 1,
-                cultureG: "Malgré sa petite taille et son aspect rural, cette province est fortement industrialisée : elle compte même davantage d'emplois dans l'industrie que dans l'agriculture."
-            },
-            {
-                question: "Quelle est la principale caractéristique de la politique de cohésion sociale de la CAPB ?",
-                options: ["Globale (Pays Basque) et locale (communes)", "Seulement du logement social", "Gérée à 100% depuis Bayonne", "Pour les moins de 25 ans uniquement"],
-                correctIndex: 0,
-                cultureG: "Pour être efficace, l'Agglomération définit de grandes orientations mais s'appuie sur les mairies et les acteurs locaux pour appliquer ces aides au plus près des habitants."
-            },
-            {
-                question: "Quel pourcentage des agents de la CAPB travaille en service déconcentré (au plus proche du terrain) ?",
-                options: ["50 %", "10 %", "70 %", "30 %"],
-                correctIndex: 2,
-                cultureG: "Pour éviter d'être une institution lointaine, 70 % des agents sont répartis dans des 'pôles territoriaux' partout sur le territoire, pour garantir un service public de proximité."
-            },
-            {
-                question: "Quelle grande ville espagnole est plus proche de Bayonne que ne l'est Bordeaux ?",
-                options: ["Barcelone", "Séville", "Madrid", "Bilbao"],
-                correctIndex: 3,
-                cultureG: "Bayonne n'est située qu'à environ 150 km de Bilbao, contre près de 190 km pour Bordeaux ! Cette proximité en fait un carrefour d'échanges incontournable."
-            }
+            { question: "Combien de provinces historiques composent le Pays Basque Nord ?", options: ["4", "5", "3", "7"], correctIndex: 2, cultureG: "Le Pays Basque Nord (Iparralde) est composé du Labourd, de la Basse-Navarre et de la Soule. Si l'on ajoute les 4 provinces du Sud (Hegoalde) en Espagne, on arrive au chiffre symbolique de 7 provinces ('Zazpiak Bat')." },
+            { question: "Quelle est la caractéristique principale de 96 % des entreprises installées au Pays Basque ?", options: ["Elles ne travaillent que dans le tourisme", "Elles appartiennent à des grands groupes mondiaux", "Elles emploient moins de 10 salariés", "Elles sont situées uniquement sur le littoral"], correctIndex: 2, cultureG: "Le tissu économique local est essentiellement composé de TPE (Très Petites Entreprises). À l'inverse des idées reçues, ces petites structures représentent un emploi sur deux sur le territoire." },
+            { question: "Vrai ou Faux : Le secteur du tourisme emploie plus de personnes que le secteur de l'industrie au Pays Basque ?", options: ["Faux", "Vrai"], correctIndex: 0, cultureG: "Malgré la forte notoriété touristique de la région, l'industrie emploie davantage de personnes que le tourisme. L'économie basque possède une forte culture de production et de fabrication." },
+            { question: "Quelle entreprise est le plus gros employeur privé du Pays Basque (environ 900 salariés) ?", options: ["L'Hôpital de Bayonne", "Carrefour", "Quiksilver", "Dassault Aviation"], correctIndex: 3, cultureG: "Située à Anglet, Dassault Aviation est le fer de lance du secteur Aéronautique, mécanique et métallurgie, l'un des 10 secteurs clés identifiés pour le territoire." },
+            { question: "En Soule, quel secteur d'activité compte le plus d'emplois directs ?", options: ["Le commerce", "L'industrie", "Le tourisme", "L'agriculture"], correctIndex: 1, cultureG: "Contrairement aux clichés sur les zones rurales, il y a plus d'emplois industriels que d'emplois agricoles en Soule. C'est un héritage de l'activité minière et de l'exploitation du bois." },
+            { question: "Comment s'appelle la monnaie locale du Pays Basque, aujourd'hui la plus importante d'Europe ?", options: ["L'Euro Basque", "L'Eusko", "Le Makila", "Le Pas-Basque"], correctIndex: 1, cultureG: "L'utilisation d'une monnaie locale comme l'Eusko illustre la volonté des habitants d'être acteurs de leur économie par leurs achats et de soutenir les circuits courts." },
+            { question: "Tu cherches une formation d'ingénieur spécialisée à Bidart. Quel site dois-tu visiter ?", options: ["Le site Izarbel (ESTIA)", "CréaLuz", "La Technocité", "Arkinova"], correctIndex: 0, cultureG: "Le technopôle Izarbel accueille l'école d'ingénieurs ESTIA. C'est le cœur de l'innovation numérique du territoire, favorisant les échanges entre recherche, formation et entreprises." },
+            { question: "Vrai ou Faux : Les fermes au Pays Basque sont en moyenne deux fois plus petites que les fermes françaises ?", options: ["Faux", "Vrai"], correctIndex: 1, cultureG: "L'agriculture basque est marquée par des exploitations de petite taille, souvent familiales. L'attachement à la terre a permis de maintenir une activité agro-pastorale dynamique." },
+            { question: "Quel pourcentage de la population du Pays Basque Nord est aujourd'hui bascophone (parle la langue basque) ?", options: ["5 %", "50 %", "80 %", "20 %"], correctIndex: 3, cultureG: "Si 20 % de la population parle le basque (Euskara), la dynamique est forte chez les jeunes : 1 élève sur 4 est aujourd'hui scolarisé dans un système immersif ou bilingue." },
+            { question: "Dans quel domaine spécifique travaille la technopôle Arkinova située à Anglet ?", options: ["La transformation du fromage de brebis", "La construction durable et l'éco-construction", "La fabrication de planches de surf", "Le développement d'applications mobiles"], correctIndex: 1, cultureG: "Arkinova est dédiée aux métiers de la construction et de l'aménagement durable. C'est un secteur clé qui répond aux défis de l'attractivité du territoire." },
+            { question: "Lequel de ces produits possède une AOP (Appellation d'Origine Protégée) au Pays Basque ?", options: ["Le chocolat de Bayonne", "Le jambon de Bayonne", "Le piment d’Espelette", "Le gâteau basque"], correctIndex: 2, cultureG: "Le piment d'Espelette bénéficie d'une AOP garantissant qu'il est cultivé, transformé et conditionné dans une zone très précise de 10 communes du Pays Basque. (Le Jambon de Bayonne a une IGP)." },
+            { question: "Quelle ville est célèbre pour sa tradition thermale et ses établissements de thalassothérapie historique ?", options: ["Hasparren", "Saint-Palais", "Mauléon", "Cambo-les-Bains"], correctIndex: 3, cultureG: "Cambo-les-Bains est l'unique station thermale du Pays Basque. Elle est réputée depuis des siècles pour les bienfaits de ses eaux, et a notamment accueilli Edmond Rostand." },
+            { question: "Dans quel village peut-on trouver l’atelier Ainciart Bergara qui fabrique des makhilas (bâtons de marche) depuis 7 générations ?", options: ["Sare", "Larressore", "Itxassou", "Espelette"], correctIndex: 1, cultureG: "L'atelier Ainciart Bergara de Larressore fabrique des makhilas, le bâton de marche traditionnel basque. C'est un savoir-faire artisanal d'excellence reconnu dans le monde entier." },
+            { question: "Quel port basque est le premier port de France pour la pêche au thon et au merlu ?", options: ["Saint-Jean-de-Luz / Ciboure", "Bayonne", "Hendaye", "Biarritz"], correctIndex: 0, cultureG: "L'activité de pêche est historique. Si elle se concentre aujourd'hui sur le thon et le merlu, les marins basques partaient autrefois jusqu'à Terre-Neuve pour chasser la baleine." },
+            { question: "Quel est le plus gros employeur public du territoire ?", options: ["Le Centre Hospitalier (CHCB)", "La Communauté d'Agglomération", "L’Éducation Nationale", "La Ville de Bayonne"], correctIndex: 0, cultureG: "Avec environ 3 500 salariés, l'Hôpital de Bayonne est le premier employeur public, devant l'Éducation Nationale et la Communauté d'Agglomération." },
+            { question: "Quelle province est historiquement liée à la fabrication de l’espadrille ?", options: ["Le Guipuscoa", "La Basse-Navarre", "La Soule", "Le Labourd"], correctIndex: 2, cultureG: "Mauléon, en Soule, est la capitale incontestée de l'espadrille. Au début du XXe siècle, cette industrie faisait vivre des milliers d'ouvriers dans la vallée." },
+            { question: "Quelle est la particularité du transport de marchandises au passage transfrontalier chaque jour ?", options: ["Tous les camions s’arrêtent au centre de fret", "10 000 camions circulent quotidiennement", "Le transport est uniquement ferroviaire", "Il n’y a plus de douane donc plus de transit"], correctIndex: 1, cultureG: "Le Pays Basque est un axe de transit européen majeur entre la péninsule ibérique et le reste de l'Europe, ce qui explique ce flux intense (et parfois problématique) de marchandises." },
+            { question: "Quelle entreprise de transport frigorifique a son siège historique à Saint-Jean-de-Luz ?", options: ["Olano", "STEF", "Petit Forestier", "Transports Lahaye"], correctIndex: 0, cultureG: "Le secteur Transport & Logistique est l'un des moteurs de l'économie locale, profitant de la position stratégique du territoire à la frontière espagnole." },
+            { question: "Quand la Communauté d'Agglomération Pays Basque (CAPB) a-t-elle été officiellement créée ?", options: ["Janvier 2006", "Janvier 2000", "Janvier 2017", "Janvier 2020"], correctIndex: 2, cultureG: "La CAPB est née le 1er janvier 2017 de la fusion de 10 anciennes intercommunalités. Cela a permis de doter le Pays Basque Nord d'une institution unique à l'échelle de son territoire." },
+            { question: "Combien de communes regroupe la Communauté d'Agglomération Pays Basque ?", options: ["21", "10", "158", "50"], correctIndex: 2, cultureG: "Avec ses 158 communes, la CAPB est l'une des plus vastes communautés d'agglomération de France. Elle s'étend du littoral très dense jusqu'aux petits villages isolés de la Soule." },
+            { question: "Quel est l'un des trois axes principaux du projet de territoire de la CAPB ?", options: ["Préserver nos ressources", "Développer le tourisme de masse", "Augmenter l'usage de la voiture", "Concentrer des emplois sur le littoral"], correctIndex: 0, cultureG: "Face aux défis climatiques et à la pression foncière, le territoire mise sur la transition écologique, la protection des espaces naturels/agricoles et la gestion de l'eau." },
+            { question: "Comment nomme-t-on la partie du Pays Basque située en France ?", options: ["Hegoalde", "Euskadi", "La Navarre", "Iparralde"], correctIndex: 3, cultureG: "'Iparralde' signifie littéralement 'le côté Nord' en basque. À l'inverse, le Pays Basque situé côté espagnol est appelé 'Hegoalde' (le côté Sud)." },
+            { question: "Quelle est l'application mobile mise en place par la CAPB pour informer sur la qualité des eaux de baignade ?", options: ["Kalilo", "BeachBask", "Océan Météo", "GeoBaignade"], correctIndex: 0, cultureG: "L'application Kalilo ('petit bateau' ou 'flotteur' en basque) permet de connaître en temps réel la couleur du drapeau et la qualité de l'eau des plages de la côte basque." },
+            { question: "Parmi les villes suivantes, laquelle fait partie du programme 'Petites Villes de Demain' ?", options: ["Bayonne", "Ciboure", "Biarritz", "Mauléon-Licharre"], correctIndex: 3, cultureG: "Ce programme national vise à redynamiser les communes de moins de 20 000 habitants. Mauléon en bénéficie pour valoriser son centre-bourg et son commerce de proximité." },
+            { question: "Quelle langue, en plus du français et du basque, est officiellement reconnue comme langue du territoire par la CAPB ?", options: ["L'espagnol", "L'anglais", "L'occitan gascon", "Le catalan"], correctIndex: 2, cultureG: "Le Pays Basque Nord n'est pas uniquement de culture basque ! Le 'Bas-Adour' (Bayonne, Anglet, Boucau...) est historiquement de culture et de langue occitane (variante gasconne)." },
+            { question: "Environ quelle part de la population du Pays Basque vit sur la frange littorale et rétro-littorale ?", options: ["La moitié", "Un quart", "La totalité", "Les trois quarts"], correctIndex: 3, cultureG: "La répartition de la population est très déséquilibrée : environ 75 % des habitants se concentrent sur seulement 15 % du territoire (la côte), ce qui crée de forts enjeux de logement." },
+            { question: "Le bassin de vie transfrontalier de Txingudi réunit Hendaye et deux villes en Espagne. Lesquelles ?", options: ["Saint-Sébastien et Pasaia", "Bilbao et Vitoria-Gasteiz", "Irun et Hondarribia (Fontarrabie)", "Pampelune et Elizondo"], correctIndex: 2, cultureG: "Ces trois villes forment le 'Consorcio Bidasoa-Txingudi'. Elles partagent la même baie et la Bidassoa, et collaborent au quotidien sur le tourisme ou la mobilité." },
+            { question: "Quelle est la particularité du tissu économique du Pays Basque en ce qui concerne la diversité des activités ?", options: ["Dépendant de l'Espagne", "Ultra-spécialisé dans l'aéronautique", "Aucune activité industrielle", "Bonne diversité sans ultra-spécialisation"], correctIndex: 3, cultureG: "Contrairement à d'autres régions (monoculture industrielle), le Pays Basque s'appuie sur une mosaïque de filières (agroalimentaire, aéronautique, glisse...). Cela rend son économie plus résistante !" },
+            { question: "Dans l'agroalimentaire, quel produit emblématique doit être transformé dans une zone qui INCLUT le Pays Basque pour obtenir son IGP ?", options: ["Le Jambon de Bayonne", "Le gâteau basque", "Le fromage Ossau-Iraty", "Le piment d'Espelette"], correctIndex: 0, cultureG: "Pour avoir l'IGP 'Jambon de Bayonne', les porcs peuvent venir d'une large zone du Sud-Ouest, mais le salage et l'affinage DOIVENT obligatoirement se faire dans le bassin de l'Adour !" },
+            { question: "De quoi est majoritairement composé le littoral basque (environ 40 km) ?", options: ["De plages de sable fin", "De dunes et marais", "De zones industrielles", "De falaises rocheuses"], correctIndex: 3, cultureG: "Contrairement à la côte landaise très plate, la côte basque est très découpée (côte à falaises). Ce paysage pose aujourd'hui de grands défis d'aménagement face à l'érosion marine." },
+            { question: "Selon les documents de l'Agglomération, quel est le deuxième pôle économique de la région Nouvelle-Aquitaine ?", options: ["Pau", "Le Pays Basque", "Limoges", "La Rochelle"], correctIndex: 1, cultureG: "Juste derrière la métropole de Bordeaux, le Pays Basque s'impose comme le 2ème bassin d'emploi et pôle économique de la plus vaste région de France." },
+            { question: "Quelle est l'une des caractéristiques de la Soule, la plus petite province basque ?", options: ["Majorité de la population", "Industrie historique (espadrille)", "Plus d'emplois agricoles qu'industriels", "Aucune frontière avec l'Espagne"], correctIndex: 1, cultureG: "Malgré sa petite taille et son aspect rural, cette province est fortement industrialisée : elle compte même davantage d'emplois dans l'industrie que dans l'agriculture." },
+            { question: "Quelle est la principale caractéristique de la politique de cohésion sociale de la CAPB ?", options: ["Globale (Pays Basque) et locale (communes)", "Seulement du logement social", "Gérée à 100% depuis Bayonne", "Pour les moins de 25 ans uniquement"], correctIndex: 0, cultureG: "Pour être efficace, l'Agglomération définit de grandes orientations mais s'appuie sur les mairies et les acteurs locaux pour appliquer ces aides au plus près des habitants." },
+            { question: "Quel pourcentage des agents de la CAPB travaille en service déconcentré (au plus proche du terrain) ?", options: ["50 %", "10 %", "70 %", "30 %"], correctIndex: 2, cultureG: "Pour éviter d'être une institution lointaine, 70 % des agents sont répartis dans des 'pôles territoriaux' partout sur le territoire, pour garantir un service public de proximité." },
+            { question: "Quelle grande ville espagnole est plus proche de Bayonne que ne l'est Bordeaux ?", options: ["Barcelone", "Séville", "Madrid", "Bilbao"], correctIndex: 3, cultureG: "Bayonne n'est située qu'à environ 150 km de Bilbao, contre près de 190 km pour Bordeaux ! Cette proximité en fait un carrefour d'échanges incontournable." }
         ];
 
-        // État de l'application
+        // --- GESTION DU ROUTAGE (Écran Animateur VS Écran Smartphone) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const isVoteMode = urlParams.get('mode') === 'vote';
+
+        // Variables d'état Animateur
         let currentIndex = 0;
         let showAnswer = false;
+        let currentVotes = [0, 0, 0, 0]; // Compteurs locaux des votes tapotés par l'animateur
+        let timeLeft = 15;
+        let timerInterval = null;
+        const TIME_LIMIT = 15;
 
-        // Éléments du DOM
+        // Éléments DOM
         const startScreen = document.getElementById('start-screen');
         const quizScreen = document.getElementById('quiz-screen');
-        const progressText = document.getElementById('progress-text');
-        const questionText = document.getElementById('question-text');
-        const optionsGrid = document.getElementById('options-grid');
-        const culturePanel = document.getElementById('culture-g-panel');
-        const waitingPanel = document.getElementById('waiting-panel');
-        const cultureText = document.getElementById('culture-text');
-        const btnPrev = document.getElementById('btn-prev');
-        const btnNext = document.getElementById('btn-next');
-        const btnToggleAnswer = document.getElementById('btn-toggle-answer');
+        const voteScreen = document.getElementById('vote-screen');
 
-        // Initialisation des icônes Lucide
-        lucide.createIcons();
+        // Initialisation globale
+        window.onload = () => {
+            lucide.createIcons();
+            if (isVoteMode) {
+                // Mode Télécommande (Smartphone)
+                startScreen.classList.add('hidden');
+                quizScreen.classList.add('hidden');
+                voteScreen.classList.remove('hidden');
+                voteScreen.classList.add('flex');
+            } else {
+                // Mode Présentation (Ordinateur/Rétroprojecteur)
+                generateQRCode();
+            }
+        };
+
+        // ==========================================
+        // LOGIQUE ANIMATEUR (Présentation)
+        // ==========================================
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = TIME_LIMIT;
+            updateTimerUI();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimerUI() {
+            const timerText = document.getElementById('timer-text');
+            const timerDisplay = document.getElementById('timer-display');
+
+            if (!timerText || !timerDisplay) return;
+
+            if (timeLeft > 0) {
+                timerText.textContent = `${timeLeft}s`;
+            } else {
+                timerText.textContent = "STOP";
+            }
+
+            // Nettoyage des couleurs
+            timerDisplay.classList.remove('bg-white', 'bg-saumon', 'bg-black', 'text-white', 'text-black');
+
+            if (timeLeft <= 5 && timeLeft > 0) {
+                timerDisplay.classList.add('bg-saumon', 'text-white');
+            } else if (timeLeft === 0) {
+                timerDisplay.classList.add('bg-black', 'text-white');
+            } else {
+                timerDisplay.classList.add('bg-white', 'text-black');
+            }
+        }
 
         function startQuiz() {
             startScreen.classList.add('hidden');
@@ -355,67 +331,92 @@
             const question = quizData[currentIndex];
             
             // Mise à jour des textes
-            progressText.textContent = `Question ${currentIndex + 1} / ${quizData.length}`;
-            questionText.textContent = question.question;
-            cultureText.textContent = question.cultureG;
+            document.getElementById('progress-text').textContent = `${currentIndex + 1} / ${quizData.length}`;
+            document.getElementById('question-text').textContent = question.question;
+            document.getElementById('culture-text').textContent = question.cultureG;
 
             // Mise à jour des boutons de navigation
-            btnPrev.disabled = currentIndex === 0;
-            btnNext.disabled = currentIndex === quizData.length - 1;
+            document.getElementById('btn-prev').disabled = currentIndex === 0;
+            document.getElementById('btn-next').disabled = currentIndex === quizData.length - 1;
 
             // Panneaux et bouton toggle
             updatePanelsAndToggleBtn();
 
-            // Génération des options
+            // Génération des options (Design Neo-Brutaliste)
+            const optionsGrid = document.getElementById('options-grid');
             optionsGrid.innerHTML = '';
+            
             question.options.forEach((option, index) => {
                 const isCorrect = showAnswer && index === question.correctIndex;
                 const isWrongOption = showAnswer && index !== question.correctIndex;
 
-                let wrapperClasses = "p-6 rounded-2xl text-xl font-medium border-2 flex items-center justify-between transition-all duration-300 ";
-                let letterClasses = "flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold shrink-0 ";
+                let wrapperClasses = "p-4 md:p-6 rounded-2xl text-lg md:text-xl font-bold border-2 border-black flex items-center justify-between transition-all duration-300 ";
+                let letterClasses = "flex items-center justify-center w-10 h-10 rounded-full border-2 border-black text-base font-black shrink-0 shadow-solide-sm ";
 
                 if (!showAnswer) {
-                    wrapperClasses += "border-slate-200 bg-slate-50 hover:border-indigo-300";
-                    letterClasses += "bg-slate-200 text-slate-600";
+                    wrapperClasses += "bg-creme shadow-solide";
+                    letterClasses += "bg-jaune text-black";
                 } else if (isCorrect) {
-                    wrapperClasses += "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-md";
-                    letterClasses += "bg-emerald-500 text-white";
+                    wrapperClasses += "bg-[#10B981] text-white shadow-solide"; // Vert émeraude franc
+                    letterClasses += "bg-white text-black";
                 } else if (isWrongOption) {
-                    wrapperClasses += "border-slate-100 bg-white text-slate-400 opacity-60";
-                    letterClasses += "bg-slate-100 text-slate-400";
+                    wrapperClasses += "bg-slate-100 text-slate-400 opacity-60 border-slate-300"; // Grisé
+                    letterClasses += "bg-slate-200 text-slate-400 border-slate-300 shadow-none";
                 }
 
                 const letter = String.fromCharCode(65 + index);
-                const checkIcon = isCorrect ? `<i data-lucide="check-circle-2" class="text-emerald-500 w-7 h-7"></i>` : '';
+                const checkIcon = isCorrect ? `<i data-lucide="check" class="text-white w-8 h-8 drop-shadow-md"></i>` : '';
+
+                // Le compteur de vote (Visible seulement quand la réponse n'est pas révélée)
+                const voteCounterUI = !showAnswer ? `
+                    <div class="flex items-center gap-1 md:gap-3 bg-white border-2 border-black rounded-full p-1 shadow-solide-sm">
+                        <button onclick="updateVote(${index}, -1)" class="w-8 h-8 flex items-center justify-center font-black text-xl hover:bg-slate-100 rounded-full transition-all">-</button>
+                        <span id="vote-count-${index}" class="font-black w-6 text-center">${currentVotes[index]}</span>
+                        <button onclick="updateVote(${index}, 1)" class="w-8 h-8 flex items-center justify-center font-black text-xl bg-jaune border-2 border-black rounded-full hover:bg-[#ffdf8c] shadow-solide-sm hover:translate-y-[1px] hover:shadow-none transition-all">+</button>
+                    </div>
+                ` : checkIcon;
 
                 optionsGrid.innerHTML += `
                     <div class="${wrapperClasses}">
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-3 md:gap-4 pr-2">
                             <span class="${letterClasses}">${letter}</span>
                             <span>${option}</span>
                         </div>
-                        ${checkIcon}
+                        <div class="shrink-0 pl-2">
+                            ${voteCounterUI}
+                        </div>
                     </div>
                 `;
             });
 
-            // Recharger les nouvelles icônes injectées
+            if (!showAnswer) {
+                startTimer();
+            }
+
             lucide.createIcons();
         }
 
+        function updateVote(optionIndex, delta) {
+            currentVotes[optionIndex] += delta;
+            if (currentVotes[optionIndex] < 0) currentVotes[optionIndex] = 0;
+            document.getElementById(`vote-count-${optionIndex}`).textContent = currentVotes[optionIndex];
+        }
+
         function updatePanelsAndToggleBtn() {
+            const culturePanel = document.getElementById('culture-g-panel');
+            const btnToggleAnswer = document.getElementById('btn-toggle-answer');
+            
             if (showAnswer) {
-                waitingPanel.classList.add('hidden');
+                stopTimer();
                 culturePanel.classList.remove('hidden');
-                btnToggleAnswer.textContent = 'Masquer la réponse';
-                btnToggleAnswer.className = 'px-8 py-4 rounded-xl font-bold text-lg shadow-md transition-all bg-slate-200 text-slate-700 hover:bg-slate-300';
+                btnToggleAnswer.innerHTML = '<i data-lucide="eye-off" class="w-6 h-6 inline-block mr-2"></i> Masquer la réponse';
+                btnToggleAnswer.className = "flex-1 md:flex-none flex justify-center items-center px-6 md:px-10 py-4 rounded-full font-black uppercase tracking-wide text-lg shadow-solide hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none transition-all bg-creme text-black border-2 border-black";
             } else {
-                waitingPanel.classList.remove('hidden');
                 culturePanel.classList.add('hidden');
-                btnToggleAnswer.textContent = 'Afficher la réponse';
-                btnToggleAnswer.className = 'px-8 py-4 rounded-xl font-bold text-lg shadow-md transition-all bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-1';
+                btnToggleAnswer.innerHTML = '<i data-lucide="eye" class="w-6 h-6 inline-block mr-2"></i> Afficher la réponse';
+                btnToggleAnswer.className = "flex-1 md:flex-none flex justify-center items-center px-6 md:px-10 py-4 rounded-full font-black uppercase tracking-wide text-lg shadow-solide hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none transition-all bg-black text-white border-2 border-black";
             }
+            lucide.createIcons();
         }
 
         function toggleAnswer() {
@@ -427,6 +428,8 @@
             if (currentIndex < quizData.length - 1) {
                 currentIndex++;
                 showAnswer = false;
+                currentVotes = [0, 0, 0, 0]; // Reset des votes locaux
+                window.scrollTo(0,0);
                 renderQuestion();
             }
         }
@@ -435,8 +438,54 @@
             if (currentIndex > 0) {
                 currentIndex--;
                 showAnswer = false;
+                currentVotes = [0, 0, 0, 0]; // Reset des votes locaux
+                window.scrollTo(0,0);
                 renderQuestion();
             }
+        }
+
+        // --- GESTION DU QR CODE ---
+        function generateQRCode() {
+            const voteUrl = window.location.href.split('?')[0] + '?mode=vote';
+            document.getElementById('qr-url-text').textContent = voteUrl;
+            
+            const qrImage = document.getElementById('qr-image');
+            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(voteUrl)}`;
+        }
+
+        function openQR() {
+            document.getElementById('qr-modal').classList.remove('hidden');
+        }
+
+        function closeQR() {
+            document.getElementById('qr-modal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // LOGIQUE SMARTPHONE (Télécommande)
+        // ==========================================
+
+        function castVote(letter) {
+            document.getElementById('vote-choices').classList.add('hidden');
+            const display = document.getElementById('vote-display');
+            const letterSpan = document.getElementById('vote-letter');
+            
+            // Nettoyage des couleurs
+            display.classList.remove('hidden', 'bg-jaune', 'bg-saumon', 'bg-canard', 'bg-white', 'text-white', 'text-black');
+            display.classList.add('flex');
+            
+            // Assignation de la lettre et des couleurs
+            letterSpan.textContent = letter;
+            if (letter === 'A') display.classList.add('bg-jaune', 'text-black');
+            if (letter === 'B') display.classList.add('bg-saumon', 'text-white');
+            if (letter === 'C') display.classList.add('bg-canard', 'text-white');
+            if (letter === 'D') display.classList.add('bg-white', 'text-black');
+        }
+
+        function resetVote() {
+            document.getElementById('vote-display').classList.add('hidden');
+            document.getElementById('vote-display').classList.remove('flex');
+            document.getElementById('vote-choices').classList.remove('hidden');
         }
     </script>
 </body>
